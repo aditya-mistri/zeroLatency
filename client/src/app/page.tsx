@@ -189,12 +189,12 @@ function Dashboard() {
 
   const handleRefreshStatus = async () => {
     if (refreshing) return; // Prevent multiple simultaneous calls
-    
+
     try {
       setRefreshing(true);
       await refreshUser();
     } catch (error) {
-      console.error('Failed to refresh status:', error);
+      console.error("Failed to refresh status:", error);
     } finally {
       setRefreshing(false);
     }
