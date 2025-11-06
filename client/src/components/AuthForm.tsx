@@ -203,7 +203,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
             value={formData.email}
             onChange={handleChange}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
             placeholder="your@email.com"
           />
         </div>
@@ -224,7 +224,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
               value={formData.password}
               onChange={handleChange}
               required
-              className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
               placeholder={
                 mode === "register" ? "Min. 8 characters" : "Your password"
               }
@@ -262,7 +262,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 />
               </div>
               <div>
@@ -279,7 +279,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 placeholder="+1 (555) 123-4567"
               />
             </div>
@@ -320,7 +320,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                     value={formData.specialization}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     placeholder="e.g., Cardiology, Dermatology"
                   />
                 </div>
@@ -342,7 +342,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                       required
                       min="0"
                       max="50"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     />
                   </div>
                   <div>
@@ -361,7 +361,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                       required
                       min="0"
                       step="0.01"
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -380,7 +380,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                     value={formData.qualification}
                     onChange={handleChange}
                     required
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     placeholder="e.g., MD, MBBS, PhD"
                   />
                 </div>
@@ -404,7 +404,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                       name="dateOfBirth"
                       value={formData.dateOfBirth}
                       onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                     />
                   </div>
                   <div>
@@ -419,7 +419,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                       name="gender"
                       value={formData.gender}
                       onChange={handleChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -445,7 +445,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
                     value={formData.address}
                     onChange={handleChange}
                     rows={2}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     placeholder="Your address"
                   />
                 </div>
