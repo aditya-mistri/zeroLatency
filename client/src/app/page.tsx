@@ -4,6 +4,8 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
 import AuthForm from "@/components/AuthForm";
+import PatientDashboard from "@/components/PatientDashboard";
+import DoctorDashboard from "@/components/DoctorDashboard";
 import {
   Heart,
   Video,
@@ -180,25 +182,8 @@ export default function Home() {
 
 // Dashboard component for authenticated users
 function Dashboard() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout } = useAuth();
   const [currentView, setCurrentView] = useState("dashboard");
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Note: Removed automatic refresh to prevent infinite loops
-  // The auth context already handles user data loading on initialization
-
-  const handleRefreshStatus = async () => {
-    if (refreshing) return; // Prevent multiple simultaneous calls
-
-    try {
-      setRefreshing(true);
-      await refreshUser();
-    } catch (error) {
-      console.error("Failed to refresh status:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   // Import moderator components dynamically
   const ModeratorDashboard = dynamic(
@@ -310,94 +295,12 @@ function Dashboard() {
               </div>
             )}
           </>
+        ) : user?.role === "PATIENT" ? (
+          // Patient Interface
+          <PatientDashboard />
         ) : (
-          // Patient/Doctor Interface
-          <div className="bg-white rounded-lg shadow p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              {user?.role === "PATIENT"
-                ? "Patient Dashboard"
-                : "Doctor Dashboard"}
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Welcome to your dashboard! More features will be available in
-              upcoming phases.
-            </p>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-medium text-blue-900">Phase 1 ✅</h3>
-                <p className="text-sm text-blue-700">Authentication & Roles</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h3 className="font-medium text-green-900">Phase 2 ✅</h3>
-                <p className="text-sm text-green-700">Doctor Verification</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-600">Phase 3 🚧</h3>
-                <p className="text-sm text-gray-500">Appointment Booking</p>
-              </div>
-            </div>
-
-            {user?.role === "DOCTOR" && (
-              <div
-                className={`mt-6 rounded-lg p-4 border ${
-                  user.doctorProfile?.status === "APPROVED"
-                    ? "bg-green-50 border-green-200"
-                    : user.doctorProfile?.status === "REJECTED"
-                      ? "bg-red-50 border-red-200"
-                      : "bg-yellow-50 border-yellow-200"
-                }`}
-              >
-                <h3
-                  className={`font-medium mb-2 ${
-                    user.doctorProfile?.status === "APPROVED"
-                      ? "text-green-900"
-                      : user.doctorProfile?.status === "REJECTED"
-                        ? "text-red-900"
-                        : "text-yellow-900"
-                  }`}
-                >
-                  Account Status
-                </h3>
-                <p
-                  className={`text-sm ${
-                    user.doctorProfile?.status === "APPROVED"
-                      ? "text-green-700"
-                      : user.doctorProfile?.status === "REJECTED"
-                        ? "text-red-700"
-                        : "text-yellow-700"
-                  }`}
-                >
-                  {user.doctorProfile?.status === "APPROVED"
-                    ? "Your account has been approved! You can now start accepting appointments and conducting consultations."
-                    : user.doctorProfile?.status === "REJECTED"
-                      ? "Your account verification was rejected. Please contact support for more information."
-                      : "Your account is pending verification by our moderation team. You&apos;ll receive an email once your credentials are reviewed."}
-                </p>
-                {user.doctorProfile?.status === "APPROVED" && (
-                  <div className="mt-3 flex items-center space-x-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      ✓ Verified Doctor
-                    </span>
-                    {user.doctorProfile.hospital && (
-                      <span className="text-xs text-green-600">
-                        {user.doctorProfile.hospital.name}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {user.doctorProfile?.status === "PENDING" && (
-                  <button
-                    onClick={handleRefreshStatus}
-                    disabled={refreshing}
-                    className="mt-3 text-xs text-yellow-600 hover:text-yellow-800 underline disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {refreshing ? "Refreshing..." : "Refresh Status"}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+          // Doctor Interface
+          <DoctorDashboard />
         )}
       </main>
     </div>

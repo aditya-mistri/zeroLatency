@@ -70,7 +70,7 @@ telehealth-connect/
 
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
 - [x] **Phase 2**: Doctor verification & moderation ✅
-- [ ] **Phase 3**: Appointment booking system
+- [x] **Phase 3**: Appointment booking system ✅
 - [ ] **Phase 4**: Payment simulation
 - [ ] **Phase 5**: Video calls & chat
 - [ ] **Phase 6**: Transcription & records
