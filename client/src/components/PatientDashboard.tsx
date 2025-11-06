@@ -60,7 +60,7 @@ export default function PatientDashboard() {
           </button>
         </div>
 
-        <AppointmentList userRole="patient" />
+        <AppointmentList userRole="PATIENT" />
       </div>
     );
   }

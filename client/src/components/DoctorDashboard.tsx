@@ -90,7 +90,7 @@ export default function DoctorDashboard() {
             ← Back to Dashboard
           </button>
         </div>
-        <AppointmentList userRole="doctor" />
+        <AppointmentList userRole="DOCTOR" />
       </div>
     );
   }

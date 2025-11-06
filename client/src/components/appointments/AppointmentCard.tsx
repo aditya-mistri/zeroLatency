@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import { Appointment } from "@/lib/appointment-api";
-import { 
-  Calendar, 
-  Clock, 
-  User, 
-  Phone, 
-  Mail, 
+import {
+  Calendar,
+  Clock,
+  User,
+  Phone,
+  Mail,
   MapPin,
   DollarSign,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Play
+  Play,
 } from "lucide-react";
 
 interface AppointmentCardProps {
@@ -23,11 +23,11 @@ interface AppointmentCardProps {
   onCancel?: (appointmentId: string, reason?: string) => Promise<void>;
 }
 
-export default function AppointmentCard({ 
-  appointment, 
-  userRole, 
+export default function AppointmentCard({
+  appointment,
+  userRole,
   onStatusUpdate,
-  onCancel 
+  onCancel,
 }: AppointmentCardProps) {
   const [loading, setLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -86,7 +86,7 @@ export default function AppointmentCard({
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!onStatusUpdate) return;
-    
+
     setLoading(true);
     try {
       await onStatusUpdate(appointment.id, newStatus);
@@ -99,7 +99,7 @@ export default function AppointmentCard({
 
   const handleCancel = async () => {
     if (!onCancel) return;
-    
+
     setLoading(true);
     try {
       await onCancel(appointment.id, cancelReason);
@@ -112,9 +112,11 @@ export default function AppointmentCard({
   };
 
   const { date, time } = formatDateTime(appointment.scheduledAt);
-  const otherParty = userRole === "PATIENT" ? appointment.doctor : appointment.patient;
+  const otherParty =
+    userRole === "PATIENT" ? appointment.doctor : appointment.patient;
   const isUpcoming = new Date(appointment.scheduledAt) > new Date();
-  const canModify = isUpcoming && ["SCHEDULED", "CONFIRMED"].includes(appointment.status);
+  const canModify =
+    isUpcoming && ["SCHEDULED", "CONFIRMED"].includes(appointment.status);
 
   return (
     <>
@@ -122,18 +124,21 @@ export default function AppointmentCard({
         {/* Header */}
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center space-x-3">
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(appointment.status)}`}>
+            <div
+              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(appointment.status)}`}
+            >
               {getStatusIcon(appointment.status)}
-              <span className="ml-1">{appointment.status.replace("_", " ")}</span>
+              <span className="ml-1">
+                {appointment.status.replace("_", " ")}
+              </span>
             </div>
             <div className="text-sm text-gray-500">
               #{appointment.id.slice(-8)}
             </div>
           </div>
-          
+
           <div className="flex items-center text-green-600 font-medium">
-            <DollarSign className="h-4 w-4 mr-1" />
-            ${appointment.amount}
+            <DollarSign className="h-4 w-4 mr-1" />${appointment.amount}
           </div>
         </div>
 
@@ -146,7 +151,9 @@ export default function AppointmentCard({
           <div className="flex items-center text-gray-700">
             <Clock className="h-5 w-5 mr-2 text-blue-600" />
             <span>{time}</span>
-            <span className="ml-1 text-gray-500">({appointment.duration} min)</span>
+            <span className="ml-1 text-gray-500">
+              ({appointment.duration} min)
+            </span>
           </div>
         </div>
 
@@ -157,10 +164,9 @@ export default function AppointmentCard({
               <User className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="font-medium text-gray-900">
-                  {userRole === "PATIENT" 
+                  {userRole === "PATIENT"
                     ? `Dr. ${otherParty.firstName} ${otherParty.lastName}`
-                    : `${otherParty.firstName} ${otherParty.lastName}`
-                  }
+                    : `${otherParty.firstName} ${otherParty.lastName}`}
                 </p>
                 {userRole === "PATIENT" && appointment.doctor.doctorProfile && (
                   <p className="text-sm text-gray-500">
@@ -179,18 +185,21 @@ export default function AppointmentCard({
           {userRole === "DOCTOR" && appointment.patient.phone && (
             <div className="flex items-center space-x-3">
               <Phone className="h-5 w-5 text-gray-400" />
-              <span className="text-sm text-gray-600">{appointment.patient.phone}</span>
-            </div>
-          )}
-
-          {userRole === "PATIENT" && appointment.doctor.doctorProfile?.hospital && (
-            <div className="flex items-center space-x-3">
-              <MapPin className="h-5 w-5 text-gray-400" />
               <span className="text-sm text-gray-600">
-                {appointment.doctor.doctorProfile.hospital.name}
+                {appointment.patient.phone}
               </span>
             </div>
           )}
+
+          {userRole === "PATIENT" &&
+            appointment.doctor.doctorProfile?.hospital && (
+              <div className="flex items-center space-x-3">
+                <MapPin className="h-5 w-5 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {appointment.doctor.doctorProfile.hospital.name}
+                </span>
+              </div>
+            )}
         </div>
 
         {/* Notes */}
@@ -214,7 +223,7 @@ export default function AppointmentCard({
                 Confirm
               </button>
             )}
-            
+
             {appointment.status === "CONFIRMED" && (
               <button
                 onClick={() => handleStatusUpdate("IN_PROGRESS")}
@@ -224,7 +233,7 @@ export default function AppointmentCard({
                 Start Consultation
               </button>
             )}
-            
+
             <button
               onClick={() => setShowCancelModal(true)}
               disabled={loading}
@@ -239,13 +248,15 @@ export default function AppointmentCard({
         <div className="mt-4 pt-3 border-t border-gray-100">
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-500">Payment Status:</span>
-            <span className={`font-medium ${
-              appointment.paymentStatus === "COMPLETED" 
-                ? "text-green-600" 
-                : appointment.paymentStatus === "FAILED"
-                ? "text-red-600"
-                : "text-yellow-600"
-            }`}>
+            <span
+              className={`font-medium ${
+                appointment.paymentStatus === "COMPLETED"
+                  ? "text-green-600"
+                  : appointment.paymentStatus === "FAILED"
+                    ? "text-red-600"
+                    : "text-yellow-600"
+              }`}
+            >
               {appointment.paymentStatus}
             </span>
           </div>
@@ -260,9 +271,10 @@ export default function AppointmentCard({
               Cancel Appointment
             </h3>
             <p className="text-gray-600 mb-4">
-              Are you sure you want to cancel this appointment? Please provide a reason:
+              Are you sure you want to cancel this appointment? Please provide a
+              reason:
             </p>
-            
+
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
@@ -270,7 +282,7 @@ export default function AppointmentCard({
               className="w-full p-3 border border-gray-300 rounded-lg mb-4 resize-none"
               rows={3}
             />
-            
+
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowCancelModal(false)}

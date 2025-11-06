@@ -4,13 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { appointmentApi, Appointment } from "@/lib/appointment-api";
 import { useAuth } from "@/lib/auth-context";
 import AppointmentCard from "./AppointmentCard";
-import { 
-  Filter, 
-  Calendar,
-  Clock,
-  AlertCircle,
-  RefreshCw 
-} from "lucide-react";
+import { Filter, Calendar, Clock, AlertCircle, RefreshCw } from "lucide-react";
 
 interface AppointmentListProps {
   userRole: "PATIENT" | "DOCTOR";
@@ -57,7 +51,9 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
       const response = await appointmentApi.getAppointments(params);
       setAppointments(response.data?.appointments || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load appointments");
+      setError(
+        err instanceof Error ? err.message : "Failed to load appointments"
+      );
     } finally {
       setLoading(false);
     }
@@ -91,11 +87,14 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
 
   const getFilterStats = () => {
     const total = appointments.length;
-    const upcoming = appointments.filter(apt => 
-      new Date(apt.scheduledAt) > new Date() && 
-      ["SCHEDULED", "CONFIRMED"].includes(apt.status)
+    const upcoming = appointments.filter(
+      (apt) =>
+        new Date(apt.scheduledAt) > new Date() &&
+        ["SCHEDULED", "CONFIRMED"].includes(apt.status)
     ).length;
-    const completed = appointments.filter(apt => apt.status === "COMPLETED").length;
+    const completed = appointments.filter(
+      (apt) => apt.status === "COMPLETED"
+    ).length;
 
     return { total, upcoming, completed };
   };
@@ -139,27 +138,33 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
             <Calendar className="h-5 w-5 text-blue-600 mr-3" />
             <div>
               <p className="text-sm text-gray-600">Total Appointments</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.total}
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-green-600 mr-3" />
             <div>
               <p className="text-sm text-gray-600">Upcoming</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.upcoming}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.upcoming}
+              </p>
             </div>
           </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex items-center">
             <Calendar className="h-5 w-5 text-gray-600 mr-3" />
             <div>
               <p className="text-sm text-gray-600">Completed</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.completed}</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stats.completed}
+              </p>
             </div>
           </div>
         </div>
@@ -172,27 +177,31 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
             <Filter className="h-5 w-5 text-gray-400" />
             <select
               value={filter.status}
-              onChange={(e) => setFilter(prev => ({ ...prev, status: e.target.value }))}
+              onChange={(e) =>
+                setFilter((prev) => ({ ...prev, status: e.target.value }))
+              }
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {statusOptions.map(option => (
+              {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
-            
+
             <label className="flex items-center space-x-2 text-sm text-gray-600">
               <input
                 type="checkbox"
                 checked={filter.upcoming}
-                onChange={(e) => setFilter(prev => ({ ...prev, upcoming: e.target.checked }))}
+                onChange={(e) =>
+                  setFilter((prev) => ({ ...prev, upcoming: e.target.checked }))
+                }
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <span>Upcoming only</span>
             </label>
           </div>
-          
+
           <button
             onClick={fetchAppointments}
             className="inline-flex items-center px-3 py-2 text-gray-600 hover:text-blue-600 transition-colors"
@@ -211,10 +220,9 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
             No Appointments Found
           </h3>
           <p className="text-gray-600 mb-4">
-            {filter.status !== "ALL" || filter.upcoming 
+            {filter.status !== "ALL" || filter.upcoming
               ? "No appointments match your current filters."
-              : `You don't have any appointments yet.`
-            }
+              : `You don't have any appointments yet.`}
           </p>
           {filter.status !== "ALL" || filter.upcoming ? (
             <button
