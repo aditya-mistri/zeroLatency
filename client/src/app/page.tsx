@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
 import AuthForm from "@/components/AuthForm";
 import {
@@ -113,8 +114,8 @@ export default function Home() {
               Why Choose ZeroLatency Connect?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We provide comprehensive ZeroLatency Health-Connect solutions for patients,
-              doctors, and healthcare providers.
+              We provide comprehensive ZeroLatency Health-Connect solutions for
+              patients, doctors, and healthcare providers.
             </p>
           </div>
 
@@ -179,7 +180,45 @@ export default function Home() {
 
 // Dashboard component for authenticated users
 function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const [currentView, setCurrentView] = useState("dashboard");
+
+  // Refresh user data when component mounts
+  useEffect(() => {
+    const refreshData = async () => {
+      try {
+        await refreshUser();
+      } catch (error) {
+        console.error("Failed to refresh user data:", error);
+      }
+    };
+
+    refreshData();
+  }, [refreshUser]);
+
+  // Import moderator components dynamically
+  const ModeratorDashboard = dynamic(
+    () => import("@/components/moderator/ModeratorDashboard"),
+    {
+      loading: () => <div className="animate-pulse">Loading...</div>,
+    }
+  );
+
+  const DoctorManagement = dynamic(
+    () => import("@/components/moderator/DoctorManagement"),
+    {
+      loading: () => <div className="animate-pulse">Loading...</div>,
+    }
+  );
+
+  const handleViewDoctor = (doctor: {
+    user: { firstName: string; lastName: string };
+  }) => {
+    // Could open a modal or navigate to detail view
+    alert(
+      `Viewing doctor: Dr. ${doctor.user.firstName} ${doctor.user.lastName}`
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -189,7 +228,7 @@ function Dashboard() {
             <div className="flex items-center">
               <Heart className="h-8 w-8 text-blue-600" />
               <span className="ml-2 text-xl font-bold text-gray-900">
-                ZeroLatency Connect
+                TeleHealth Connect
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -208,35 +247,153 @@ function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {user?.role === "PATIENT"
-              ? "Patient Dashboard"
-              : user?.role === "DOCTOR"
-                ? "Doctor Dashboard"
-                : "Moderator Dashboard"}
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Welcome to your dashboard! More features will be available in
-            upcoming phases.
-          </p>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900">Phase 1 ✅</h3>
-              <p className="text-sm text-blue-700">Authentication & Roles</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-600">Phase 2 🚧</h3>
-              <p className="text-sm text-gray-500">Doctor Verification</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-600">Phase 3 🚧</h3>
-              <p className="text-sm text-gray-500">Appointment Booking</p>
+      {/* Navigation for Moderators */}
+      {user?.role === "MODERATOR" && (
+        <nav className="bg-white border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex space-x-8">
+              <button
+                onClick={() => setCurrentView("dashboard")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  currentView === "dashboard"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => setCurrentView("doctors")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  currentView === "doctors"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Doctor Management
+              </button>
+              <button
+                onClick={() => setCurrentView("hospitals")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  currentView === "hospitals"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                Hospitals
+              </button>
             </div>
           </div>
-        </div>
+        </nav>
+      )}
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {user?.role === "MODERATOR" ? (
+          // Moderator Interface
+          <>
+            {currentView === "dashboard" && <ModeratorDashboard />}
+            {currentView === "doctors" && (
+              <DoctorManagement onViewDoctor={handleViewDoctor} />
+            )}
+            {currentView === "hospitals" && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4">
+                  Hospital Management
+                </h2>
+                <p className="text-gray-600">
+                  Hospital management interface coming soon...
+                </p>
+              </div>
+            )}
+          </>
+        ) : (
+          // Patient/Doctor Interface
+          <div className="bg-white rounded-lg shadow p-6">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              {user?.role === "PATIENT"
+                ? "Patient Dashboard"
+                : "Doctor Dashboard"}
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Welcome to your dashboard! More features will be available in
+              upcoming phases.
+            </p>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium text-blue-900">Phase 1 ✅</h3>
+                <p className="text-sm text-blue-700">Authentication & Roles</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-medium text-green-900">Phase 2 ✅</h3>
+                <p className="text-sm text-green-700">Doctor Verification</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-600">Phase 3 🚧</h3>
+                <p className="text-sm text-gray-500">Appointment Booking</p>
+              </div>
+            </div>
+
+            {user?.role === "DOCTOR" && (
+              <div
+                className={`mt-6 rounded-lg p-4 border ${
+                  user.doctorProfile?.status === "APPROVED"
+                    ? "bg-green-50 border-green-200"
+                    : user.doctorProfile?.status === "REJECTED"
+                      ? "bg-red-50 border-red-200"
+                      : "bg-yellow-50 border-yellow-200"
+                }`}
+              >
+                <h3
+                  className={`font-medium mb-2 ${
+                    user.doctorProfile?.status === "APPROVED"
+                      ? "text-green-900"
+                      : user.doctorProfile?.status === "REJECTED"
+                        ? "text-red-900"
+                        : "text-yellow-900"
+                  }`}
+                >
+                  Account Status
+                </h3>
+                <p
+                  className={`text-sm ${
+                    user.doctorProfile?.status === "APPROVED"
+                      ? "text-green-700"
+                      : user.doctorProfile?.status === "REJECTED"
+                        ? "text-red-700"
+                        : "text-yellow-700"
+                  }`}
+                >
+                  {user.doctorProfile?.status === "APPROVED"
+                    ? "Your account has been approved! You can now start accepting appointments and conducting consultations."
+                    : user.doctorProfile?.status === "REJECTED"
+                      ? "Your account verification was rejected. Please contact support for more information."
+                      : "Your account is pending verification by our moderation team. You&apos;ll receive an email once your credentials are reviewed."}
+                </p>
+                {user.doctorProfile?.status === "APPROVED" && (
+                  <div className="mt-3 flex items-center space-x-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      ✓ Verified Doctor
+                    </span>
+                    {user.doctorProfile.hospital && (
+                      <span className="text-xs text-green-600">
+                        {user.doctorProfile.hospital.name}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {user.doctorProfile?.status === "PENDING" && (
+                  <button
+                    onClick={refreshUser}
+                    className="mt-3 text-xs text-yellow-600 hover:text-yellow-800 underline"
+                  >
+                    Refresh Status
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

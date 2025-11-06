@@ -1,199 +1,166 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-}
-
-enum UserRole {
-    PATIENT
-    DOCTOR
-    MODERATOR
-}
-
-enum DoctorStatus {
-    PENDING
-    APPROVED
-    REJECTED
-}
-
-enum AppointmentStatus {
-    SCHEDULED
-    CONFIRMED
-    IN_PROGRESS
-    COMPLETED
-    CANCELLED
-}
-
-enum PaymentStatus {
-    PENDING
-    COMPLETED
-    FAILED
-    REFUNDED
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id        String   @id @default(cuid())
-    email     String   @unique
-    password  String
-    firstName String
-    lastName  String
-    phone     String?
-    role      UserRole @default(PATIENT)
-    avatar    String?
-    isActive  Boolean  @default(true)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id                  String            @id @default(cuid())
+  email               String            @unique
+  password            String
+  firstName           String
+  lastName            String
+  phone               String?
+  role                UserRole          @default(PATIENT)
+  avatar              String?
+  isActive            Boolean           @default(true)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  dateOfBirth         DateTime?
+  gender              String?
+  address             String?
+  doctorAppointments  Appointment[]     @relation("DoctorAppointments")
+  patientAppointments Appointment[]     @relation("PatientAppointments")
+  chatMessages        ChatMessage[]
+  doctorProfile       DoctorProfile?
+  sessionRecords      SessionRecord[]
+  verificationDocs    VerificationDoc[]
 
-    // Patient specific fields
-    dateOfBirth DateTime?
-    gender      String?
-    address     String?
-
-    // Doctor specific fields
-    doctorProfile DoctorProfile?
-
-    // Relationships
-    patientAppointments Appointment[]     @relation("PatientAppointments")
-    doctorAppointments  Appointment[]     @relation("DoctorAppointments")
-    sessionRecords      SessionRecord[]
-    chatMessages        ChatMessage[]
-    verificationDocs    VerificationDoc[]
-
-    @@map("users")
+  @@map("users")
 }
 
 model DoctorProfile {
-    id     String @id @default(cuid())
-    userId String @unique
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String       @id @default(cuid())
+  userId          String       @unique
+  specialization  String
+  experience      Int
+  qualification   String
+  bio             String?
+  consultationFee Float
+  status          DoctorStatus @default(PENDING)
+  hospitalId      String?
+  availableSlots  Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  hospital        Hospital?    @relation(fields: [hospitalId], references: [id])
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    specialization  String
-    experience      Int // years of experience
-    qualification   String
-    bio             String?
-    consultationFee Float
-    status          DoctorStatus @default(PENDING)
-
-    // Hospital association
-    hospitalId String?
-    hospital   Hospital? @relation(fields: [hospitalId], references: [id])
-
-    // Availability
-    availableSlots Json? // Store available time slots
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@map("doctor_profiles")
+  @@map("doctor_profiles")
 }
 
 model Hospital {
-    id          String   @id @default(cuid())
-    name        String
-    address     String
-    city        String
-    state       String
-    zipCode     String
-    phone       String
-    email       String?
-    website     String?
-    description String?
-    isActive    Boolean  @default(true)
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+  id          String          @id @default(cuid())
+  name        String
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  phone       String
+  email       String?
+  website     String?
+  description String?
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  doctors     DoctorProfile[]
 
-    // Relationships
-    doctors DoctorProfile[]
-
-    @@map("hospitals")
+  @@map("hospitals")
 }
 
 model Appointment {
-    id        String @id @default(cuid())
-    patientId String
-    doctorId  String
-    patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
-    doctor    User   @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  id            String            @id @default(cuid())
+  patientId     String
+  doctorId      String
+  scheduledAt   DateTime
+  duration      Int               @default(30)
+  status        AppointmentStatus @default(SCHEDULED)
+  meetingLink   String?
+  notes         String?
+  amount        Float
+  paymentId     String?
+  paymentStatus PaymentStatus     @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  doctor        User              @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient       User              @relation("PatientAppointments", fields: [patientId], references: [id])
+  chatMessages  ChatMessage[]
+  sessionRecord SessionRecord?
 
-    scheduledAt DateTime
-    duration    Int               @default(30) // duration in minutes
-    status      AppointmentStatus @default(SCHEDULED)
-
-    // Consultation details
-    meetingLink String?
-    notes       String?
-
-    // Payment
-    amount        Float
-    paymentId     String?
-    paymentStatus PaymentStatus @default(PENDING)
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    // Relationships
-    sessionRecord SessionRecord?
-    chatMessages  ChatMessage[]
-
-    @@map("appointments")
+  @@map("appointments")
 }
 
 model SessionRecord {
-    id            String      @id @default(cuid())
-    appointmentId String      @unique
-    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  userId        String
+  transcript    String?
+  summary       String?
+  recordings    Json?
+  duration      Int?
+  startedAt     DateTime?
+  endedAt       DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id])
 
-    userId String
-    user   User   @relation(fields: [userId], references: [id])
-
-    transcript String?
-    summary    String?
-    recordings Json? // Store recording URLs/metadata
-    duration   Int? // actual duration in minutes
-
-    startedAt DateTime?
-    endedAt   DateTime?
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-
-    @@map("session_records")
+  @@map("session_records")
 }
 
 model ChatMessage {
-    id            String      @id @default(cuid())
-    appointmentId String
-    appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  appointmentId String
+  senderId      String
+  message       String
+  messageType   String      @default("text")
+  metadata      Json?
+  sentAt        DateTime    @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  sender        User        @relation(fields: [senderId], references: [id])
 
-    senderId String
-    sender   User   @relation(fields: [senderId], references: [id])
-
-    message     String
-    messageType String @default("text") // text, image, file
-    metadata    Json? // For file attachments, etc.
-
-    sentAt DateTime @default(now())
-
-    @@map("chat_messages")
+  @@map("chat_messages")
 }
 
 model VerificationDoc {
-    id     String @id @default(cuid())
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  userId     String
+  docType    String
+  fileName   String
+  fileUrl    String
+  status     String    @default("pending")
+  uploadedAt DateTime  @default(now())
+  reviewedAt DateTime?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    docType  String // "license", "certificate", "id", etc.
-    fileName String
-    fileUrl  String
-    status   String @default("pending") // pending, approved, rejected
+  @@map("verification_docs")
+}
 
-    uploadedAt DateTime  @default(now())
-    reviewedAt DateTime?
+enum UserRole {
+  PATIENT
+  DOCTOR
+  MODERATOR
+}
 
-    @@map("verification_docs")
+enum DoctorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

@@ -38,7 +38,7 @@ export interface DoctorProfile {
   status: DoctorStatus;
   hospitalId?: string;
   hospital?: Hospital;
-  availableSlots?: any;
+  availableSlots?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

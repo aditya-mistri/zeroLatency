@@ -1,14 +1,55 @@
 import { Router } from "express";
-import { authenticateToken, requireModerator } from "../middleware/auth";
+import {
+  authenticateToken,
+  requireModerator,
+  validateRequestBody,
+} from "../middleware/auth";
+import {
+  getDashboardStats,
+  getDoctors,
+  getDoctorById,
+  approveDoctor,
+  rejectDoctor,
+  updateDoctorProfile,
+} from "../controllers/moderatorController";
+import {
+  getHospitals,
+  getHospitalById,
+  createHospital,
+  updateHospital,
+  deleteHospital,
+  getHospitalStats,
+} from "../controllers/hospitalController";
 
 const router = Router();
 
-// Placeholder for moderator-related routes
-router.get("/", authenticateToken, requireModerator, (req, res) => {
-  res.json({
-    status: "success",
-    message: "Moderator endpoint - Coming soon in Phase 2",
-  });
-});
+// All routes require authentication and moderator role
+router.use(authenticateToken, requireModerator);
+
+// Dashboard routes
+router.get("/dashboard/stats", getDashboardStats);
+
+// Doctor management routes
+router.get("/doctors", getDoctors);
+router.get("/doctors/:doctorId", getDoctorById);
+router.put("/doctors/:doctorId/approve", approveDoctor);
+router.put(
+  "/doctors/:doctorId/reject",
+  validateRequestBody(["reason"]),
+  rejectDoctor
+);
+router.put("/doctors/:doctorId", updateDoctorProfile);
+
+// Hospital management routes
+router.get("/hospitals", getHospitals);
+router.get("/hospitals/:hospitalId", getHospitalById);
+router.post(
+  "/hospitals",
+  validateRequestBody(["name", "address", "city", "state", "zipCode", "phone"]),
+  createHospital
+);
+router.put("/hospitals/:hospitalId", updateHospital);
+router.delete("/hospitals/:hospitalId", deleteHospital);
+router.get("/hospitals/:hospitalId/stats", getHospitalStats);
 
 export default router;

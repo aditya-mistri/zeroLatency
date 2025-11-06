@@ -3,7 +3,9 @@
 > A full-stack Telehealth web platform that enables patients to connect with verified doctors for remote consultations.
 
 ## Live Demo
--------------------
+- **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
+- **Backend API**: [https://zerolatency-xf57.onrender.com/api](https://zerolatency-xf57.onrender.com/api)
+- **Local Development**: Frontend on port 5173, Backend on port 5000
 
 ## Project Overview
 
@@ -67,7 +69,7 @@ telehealth-connect/
 ## Development Phases
 
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
-- [ ] **Phase 2**: Doctor verification & moderation
+- [x] **Phase 2**: Doctor verification & moderation ✅
 - [ ] **Phase 3**: Appointment booking system
 - [ ] **Phase 4**: Payment simulation
 - [ ] **Phase 5**: Video calls & chat
