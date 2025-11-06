@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useAuth } from "@/lib/auth-context";
 import AuthForm from "@/components/AuthForm";
@@ -182,19 +182,23 @@ export default function Home() {
 function Dashboard() {
   const { user, logout, refreshUser } = useAuth();
   const [currentView, setCurrentView] = useState("dashboard");
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Refresh user data when component mounts
-  useEffect(() => {
-    const refreshData = async () => {
-      try {
-        await refreshUser();
-      } catch (error) {
-        console.error("Failed to refresh user data:", error);
-      }
-    };
+  // Note: Removed automatic refresh to prevent infinite loops
+  // The auth context already handles user data loading on initialization
 
-    refreshData();
-  }, [refreshUser]);
+  const handleRefreshStatus = async () => {
+    if (refreshing) return; // Prevent multiple simultaneous calls
+    
+    try {
+      setRefreshing(true);
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to refresh status:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Import moderator components dynamically
   const ModeratorDashboard = dynamic(
@@ -384,10 +388,11 @@ function Dashboard() {
                 )}
                 {user.doctorProfile?.status === "PENDING" && (
                   <button
-                    onClick={refreshUser}
-                    className="mt-3 text-xs text-yellow-600 hover:text-yellow-800 underline"
+                    onClick={handleRefreshStatus}
+                    disabled={refreshing}
+                    className="mt-3 text-xs text-yellow-600 hover:text-yellow-800 underline disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Refresh Status
+                    {refreshing ? "Refreshing..." : "Refresh Status"}
                   </button>
                 )}
               </div>
