@@ -1,4 +1,4 @@
-# 🏥 TeleHealth Connect
+# 🏥 ZeroLatency Connect
 
 > A full-stack Telehealth web platform that enables patients to connect with verified doctors for remote consultations.
 
@@ -39,7 +39,7 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 ## Project Structure
 
 ```
-telehealth-connect/
+ZeroLatency-connect/
 ├── client/                 # Next.js frontend
 │   ├── app/                # App router pages
 │   ├── components/         # Reusable UI components
@@ -83,6 +83,7 @@ telehealth-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
 
 
 
