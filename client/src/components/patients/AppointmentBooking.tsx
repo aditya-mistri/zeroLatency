@@ -1,8 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { appointmentApi, Doctor, TimeSlot } from "@/lib/appointment-api";
+import {
+  appointmentApi,
+  Doctor,
+  TimeSlot,
+  Appointment,
+} from "@/lib/appointment-api";
 import { useAuth } from "@/lib/auth-context";
+import { config } from "@/lib/config";
+import PaymentForm from "../payments/PaymentForm";
 import { ArrowLeft, Calendar, Clock, DollarSign, MapPin } from "lucide-react";
 
 interface AppointmentBookingProps {
@@ -23,33 +30,102 @@ export default function AppointmentBooking({
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [loadingDates, setLoadingDates] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [createdAppointment, setCreatedAppointment] =
+    useState<Appointment | null>(null);
+  const [availableDates, setAvailableDates] = useState<
+    {
+      value: string;
+      label: string;
+      fullDate: string;
+      dayOfWeek: string;
+      slotsCount: number;
+    }[]
+  >([]);
 
-  // Generate next 7 days for date selection
-  const getNext7Days = () => {
-    const days = [];
-    for (let i = 1; i <= 7; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      days.push({
-        value: date.toISOString().split("T")[0],
-        label: date.toLocaleDateString("en-US", {
-          weekday: "short",
-          month: "short",
-          day: "numeric",
-        }),
-        fullDate: date.toLocaleDateString("en-US", {
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-      });
+  // Fetch doctor's available dates on component mount
+  useEffect(() => {
+    fetchAvailableDates();
+  }, [doctor.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const fetchAvailableDates = async () => {
+    try {
+      setLoadingDates(true);
+      setError(null);
+
+      // Get availability for next 7 days (including today)
+      const startDate = new Date();
+      // Start from today
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 7);
+
+      const response = await fetch(
+        `${config.api.baseUrl}/availability/doctor/${doctor.id}?startDate=${startDate.toISOString().split("T")[0]}&endDate=${endDate.toISOString().split("T")[0]}`
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.status === "success" && result.data?.availableDays) {
+          const datesWithSlots = result.data.availableDays.map(
+            (day: {
+              date: string;
+              dayOfWeek: string;
+              slots: Array<{
+                time: string;
+                displayTime: string;
+                available: boolean;
+              }>;
+            }) => ({
+              value: day.date,
+              label: new Date(day.date + "T00:00:00").toLocaleDateString(
+                "en-US",
+                {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                }
+              ),
+              fullDate: new Date(day.date + "T00:00:00").toLocaleDateString(
+                "en-US",
+                {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                }
+              ),
+              dayOfWeek: day.dayOfWeek,
+              slotsCount: day.slots.length,
+            })
+          );
+          setAvailableDates(datesWithSlots);
+
+          // If no dates available, show appropriate message
+          if (datesWithSlots.length === 0) {
+            setError(
+              "Doctor has not set availability for the next 7 days. Please check back later."
+            );
+          }
+        } else {
+          setAvailableDates([]);
+          setError(
+            "Doctor has not set availability for the next 7 days. Please check back later."
+          );
+        }
+      } else {
+        setError("Failed to load doctor's availability.");
+        setAvailableDates([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch available dates:", err);
+      setError("Failed to load doctor's availability. Please try again.");
+      setAvailableDates([]);
+    } finally {
+      setLoadingDates(false);
     }
-    return days;
   };
-
-  const availableDates = getNext7Days();
 
   // Fetch available slots when date is selected
   useEffect(() => {
@@ -104,8 +180,10 @@ export default function AppointmentBooking({
         duration: 30,
       });
 
-      if (response.status === "success") {
-        onBookingSuccess();
+      if (response.status === "success" && response.data?.appointment) {
+        // Store the created appointment and show payment form
+        setCreatedAppointment(response.data.appointment);
+        setShowPayment(true);
       }
     } catch (err: unknown) {
       const errorMessage =
@@ -122,6 +200,50 @@ export default function AppointmentBooking({
       setLoading(false);
     }
   };
+
+  const handlePaymentSuccess = () => {
+    // Call the original success callback after payment is complete
+    onBookingSuccess();
+  };
+
+  const handlePaymentCancel = () => {
+    // Reset to booking form
+    setShowPayment(false);
+    setCreatedAppointment(null);
+  };
+
+  // Show payment form if appointment was created successfully
+  if (showPayment && createdAppointment) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="flex items-center mb-6">
+          <button
+            onClick={handlePaymentCancel}
+            className="flex items-center text-blue-600 hover:text-blue-800 mr-4"
+          >
+            <ArrowLeft className="h-5 w-5 mr-1" />
+            Back to booking
+          </button>
+          <h2 className="text-2xl font-bold text-gray-900">Complete Payment</h2>
+        </div>
+
+        <PaymentForm
+          appointmentDetails={{
+            id: createdAppointment.id,
+            doctorName: `${createdAppointment.doctor.firstName} ${createdAppointment.doctor.lastName}`,
+            specialization:
+              createdAppointment.doctor.doctorProfile.specialization,
+            hospitalName:
+              createdAppointment.doctor.doctorProfile.hospital?.name,
+            scheduledAt: createdAppointment.scheduledAt,
+            amount: createdAppointment.amount,
+          }}
+          onPaymentSuccess={handlePaymentSuccess}
+          onCancel={handlePaymentCancel}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -210,25 +332,52 @@ export default function AppointmentBooking({
               <Calendar className="h-4 w-4 inline mr-1" />
               Select Date
             </label>
-            <div className="grid grid-cols-1 gap-2">
-              {availableDates.map((date) => (
+
+            {loadingDates ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">
+                  Loading available dates...
+                </span>
+              </div>
+            ) : availableDates.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2">
+                {availableDates.map((date) => (
+                  <button
+                    key={date.value}
+                    onClick={() => {
+                      setSelectedDate(date.value);
+                      setSelectedTime(""); // Reset time selection
+                    }}
+                    className={`p-3 text-left border rounded-lg transition-colors ${
+                      selectedDate === date.value
+                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        : "border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    <div className="font-medium">{date.label}</div>
+                    <div className="text-sm text-gray-600">{date.fullDate}</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      {date.slotsCount} slots available
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p className="font-medium">No availability set</p>
+                <p className="text-sm">
+                  Doctor has not set availability for the next 7 days.
+                </p>
                 <button
-                  key={date.value}
-                  onClick={() => {
-                    setSelectedDate(date.value);
-                    setSelectedTime(""); // Reset time selection
-                  }}
-                  className={`p-3 text-left border rounded-lg transition-colors ${
-                    selectedDate === date.value
-                      ? "border-blue-500 bg-blue-50 text-blue-700"
-                      : "border-gray-300 hover:border-gray-400"
-                  }`}
+                  onClick={fetchAvailableDates}
+                  className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700 text-sm"
                 >
-                  <div className="font-medium">{date.label}</div>
-                  <div className="text-sm text-gray-600">{date.fullDate}</div>
+                  Refresh availability
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
 
           {/* Time Selection */}

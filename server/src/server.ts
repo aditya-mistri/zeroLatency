@@ -3,6 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import { createServer } from "http";
+import { setupSocketIO } from "./socket/socketHandler";
 
 // Import routes
 import authRoutes from "./routes/auth";
@@ -10,7 +12,9 @@ import userRoutes from "./routes/users";
 import doctorRoutes from "./routes/doctors";
 import hospitalRoutes from "./routes/hospitals";
 import appointmentRoutes from "./routes/appointments";
+import availabilityRoutes from "./routes/availability";
 import moderatorRoutes from "./routes/moderator";
+import videoRoutes from "./routes/video";
 
 // Load environment variables
 dotenv.config();
@@ -55,7 +59,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/availability", availabilityRoutes);
 app.use("/api/moderator", moderatorRoutes);
+app.use("/api/video", videoRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -76,11 +82,20 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
+// Create HTTP server and setup Socket.IO
+const server = createServer(app);
+const io = setupSocketIO(server);
+
+// Inject Socket.IO into controllers that need it
+import { setSocketIO } from "./controllers/appointmentController";
+setSocketIO(io);
+
 // Start server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(` ZeroLatency Connect API running on port ${PORT}`);
   console.log(` Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(` Health check: http://localhost:${PORT}/health`);
+  console.log(` Socket.IO enabled for real-time chat`);
 });
 
 export default app;

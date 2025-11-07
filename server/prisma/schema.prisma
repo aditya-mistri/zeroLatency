@@ -33,22 +33,39 @@ model User {
 }
 
 model DoctorProfile {
-  id              String       @id @default(cuid())
-  userId          String       @unique
-  specialization  String
-  experience      Int
-  qualification   String
-  bio             String?
-  consultationFee Float
-  status          DoctorStatus @default(PENDING)
-  hospitalId      String?
-  availableSlots  Json?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  hospital        Hospital?    @relation(fields: [hospitalId], references: [id])
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String               @id @default(cuid())
+  userId            String               @unique
+  specialization    String
+  experience        Int
+  qualification     String
+  bio               String?
+  consultationFee   Float
+  status            DoctorStatus         @default(PENDING)
+  hospitalId        String?
+  availableSlots    Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  hospital          Hospital?            @relation(fields: [hospitalId], references: [id])
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availabilitySlots DoctorAvailability[]
 
   @@map("doctor_profiles")
+}
+
+model DoctorAvailability {
+  id              String        @id @default(cuid())
+  doctorProfileId String
+  date            DateTime // Specific date (YYYY-MM-DD)
+  startTime       String // Format: "09:00"
+  endTime         String // Format: "17:00"
+  slotDuration    Int           @default(30) // Duration of each slot in minutes
+  isAvailable     Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  doctorProfile   DoctorProfile @relation(fields: [doctorProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorProfileId, date])
+  @@map("doctor_availability")
 }
 
 model Hospital {
@@ -76,7 +93,7 @@ model Appointment {
   doctorId      String
   scheduledAt   DateTime
   duration      Int               @default(30)
-  status        AppointmentStatus @default(SCHEDULED)
+  status        AppointmentStatus @default(PAYMENT_PENDING)
   meetingLink   String?
   notes         String?
   amount        Float
@@ -151,6 +168,7 @@ enum DoctorStatus {
 }
 
 enum AppointmentStatus {
+  PAYMENT_PENDING
   SCHEDULED
   CONFIRMED
   IN_PROGRESS

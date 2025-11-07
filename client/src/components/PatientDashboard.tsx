@@ -75,22 +75,6 @@ export default function PatientDashboard() {
         <p className="text-gray-600">Book appointments with verified doctors</p>
       </div>
 
-      {/* Phase Progress */}
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium text-blue-900">Phase 1 ✅</h3>
-          <p className="text-sm text-blue-700">Authentication & Roles</p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="font-medium text-green-900">Phase 2 ✅</h3>
-          <p className="text-sm text-green-700">Doctor Verification</p>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium text-blue-900">Phase 3 ✅</h3>
-          <p className="text-sm text-blue-700">Appointment Booking</p>
-        </div>
-      </div>
-
       {/* Quick Actions */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         <button
@@ -124,7 +108,6 @@ export default function PatientDashboard() {
         <div className="bg-white p-6 rounded-lg shadow opacity-75">
           <div className="flex items-center justify-between mb-4">
             <Clock className="h-8 w-8 text-gray-400" />
-            <div className="text-xs text-gray-400">Phase 4</div>
           </div>
           <h3 className="font-semibold text-gray-500 mb-2">Medical History</h3>
           <p className="text-sm text-gray-400">
@@ -135,7 +118,6 @@ export default function PatientDashboard() {
         <div className="bg-white p-6 rounded-lg shadow opacity-75">
           <div className="flex items-center justify-between mb-4">
             <Clock className="h-8 w-8 text-gray-400" />
-            <div className="text-xs text-gray-400">Phase 5</div>
           </div>
           <h3 className="font-semibold text-gray-500 mb-2">Video Calls</h3>
           <p className="text-sm text-gray-400">
@@ -147,7 +129,7 @@ export default function PatientDashboard() {
       {/* Features Overview */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          🎉 New in Phase 3: Appointment Booking
+          🎉 Appointment Booking
         </h3>
         <div className="grid md:grid-cols-2 gap-6">
           <div>

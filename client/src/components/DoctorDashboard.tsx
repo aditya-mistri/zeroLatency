@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import AppointmentList from "./appointments/AppointmentList";
+import AvailabilityManager from "./doctor/AvailabilityManager";
 import {
   Calendar,
   Users,
@@ -13,7 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-type ViewState = "dashboard" | "appointments";
+type ViewState = "dashboard" | "appointments" | "availability";
 
 export default function DoctorDashboard() {
   const { user, refreshUser } = useAuth();
@@ -91,6 +92,26 @@ export default function DoctorDashboard() {
           </button>
         </div>
         <AppointmentList userRole="DOCTOR" />
+      </div>
+    );
+  }
+
+  // Handle availability management view
+  if (currentView === "availability") {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">
+            Manage Availability
+          </h2>
+          <button
+            onClick={() => setCurrentView("dashboard")}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+        <AvailabilityManager />
       </div>
     );
   }
@@ -177,22 +198,6 @@ export default function DoctorDashboard() {
         </div>
       )}
 
-      {/* Phase Progress */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium text-blue-900">Phase 1 ✅</h3>
-          <p className="text-sm text-blue-700">Authentication & Roles</p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="font-medium text-green-900">Phase 2 ✅</h3>
-          <p className="text-sm text-green-700">Doctor Verification</p>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <h3 className="font-medium text-blue-900">Phase 3 ✅</h3>
-          <p className="text-sm text-blue-700">Appointment System</p>
-        </div>
-      </div>
-
       {/* Dashboard Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Appointments Card */}
@@ -250,24 +255,25 @@ export default function DoctorDashboard() {
         </div>
 
         {/* Schedule Card */}
-        <div className="bg-white p-6 rounded-lg shadow opacity-75">
+        <button
+          onClick={() => setCurrentView("availability")}
+          className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition-shadow text-left w-full"
+        >
           <div className="flex items-center justify-between mb-4">
-            <Clock className="h-8 w-8 text-gray-400" />
-            <div className="text-xs text-gray-400">Phase 4</div>
+            <Clock className="h-8 w-8 text-blue-600" />
           </div>
-          <h3 className="font-semibold text-gray-500 mb-2">
+          <h3 className="font-semibold text-gray-900 mb-2">
             Schedule Management
           </h3>
-          <p className="text-sm text-gray-400">
-            Set your availability and time slots
+          <p className="text-sm text-gray-600">
+            Set your availability and time slots for the next 7 days
           </p>
-        </div>
+        </button>
 
         {/* Reviews Card */}
         <div className="bg-white p-6 rounded-lg shadow opacity-75">
           <div className="flex items-center justify-between mb-4">
             <Star className="h-8 w-8 text-gray-400" />
-            <div className="text-xs text-gray-400">Phase 5</div>
           </div>
           <h3 className="font-semibold text-gray-500 mb-2">
             Reviews & Ratings

@@ -25,6 +25,9 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
 
   const statusOptions = [
     { value: "ALL", label: "All Appointments" },
+    ...(userRole === "PATIENT"
+      ? [{ value: "PAYMENT_PENDING", label: "Payment Pending" }]
+      : []),
     { value: "SCHEDULED", label: "Scheduled" },
     { value: "CONFIRMED", label: "Confirmed" },
     { value: "IN_PROGRESS", label: "In Progress" },

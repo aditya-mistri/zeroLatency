@@ -14,7 +14,14 @@ import {
   XCircle,
   AlertCircle,
   Play,
+  Video,
 } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const StreamConsultation = dynamic(
+  () => import("../stream/StreamConsultation"),
+  { ssr: false }
+);
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -32,9 +39,12 @@ export default function AppointmentCard({
   const [loading, setLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const [showConsultation, setShowConsultation] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "PAYMENT_PENDING":
+        return "bg-orange-50 text-orange-700 border-orange-200";
       case "SCHEDULED":
         return "bg-blue-50 text-blue-700 border-blue-200";
       case "CONFIRMED":
@@ -52,6 +62,8 @@ export default function AppointmentCard({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case "PAYMENT_PENDING":
+        return <DollarSign className="h-4 w-4" />;
       case "SCHEDULED":
         return <Calendar className="h-4 w-4" />;
       case "CONFIRMED":
@@ -211,9 +223,44 @@ export default function AppointmentCard({
           </div>
         )}
 
+        {/* Payment Pending Message */}
+        {appointment.status === "PAYMENT_PENDING" && (
+          <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+            <div className="flex items-center">
+              <DollarSign className="h-5 w-5 text-orange-600 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-orange-800">
+                  Payment Required
+                </p>
+                <p className="text-xs text-orange-700">
+                  {userRole === "PATIENT"
+                    ? "Complete your payment to confirm this appointment"
+                    : "Appointment will be visible once patient completes payment"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         {canModify && (
           <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+            {/* Pay Now button for PAYMENT_PENDING appointments */}
+            {userRole === "PATIENT" &&
+              appointment.status === "PAYMENT_PENDING" &&
+              appointment.paymentStatus === "PENDING" && (
+                <button
+                  onClick={() =>
+                    (window.location.href = `/payment/${appointment.id}`)
+                  }
+                  disabled={loading}
+                  className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors flex items-center"
+                >
+                  <DollarSign className="h-4 w-4 mr-1" />
+                  Pay Now (₹{appointment.amount})
+                </button>
+              )}
+
             {userRole === "DOCTOR" && appointment.status === "SCHEDULED" && (
               <button
                 onClick={() => handleStatusUpdate("CONFIRMED")}
@@ -234,13 +281,30 @@ export default function AppointmentCard({
               </button>
             )}
 
-            <button
-              onClick={() => setShowCancelModal(true)}
-              disabled={loading}
-              className="px-4 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 disabled:opacity-50 transition-colors"
-            >
-              Cancel
-            </button>
+            {/* Join Consultation button */}
+            {canModify && (
+              <button
+                onClick={() => setShowConsultation(true)}
+                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                <Video className="h-4 w-4" />
+                Join Consultation
+              </button>
+            )}
+
+            {/* Don't allow cancellation for PAYMENT_PENDING with COMPLETED payment */}
+            {!(
+              appointment.status === "PAYMENT_PENDING" &&
+              appointment.paymentStatus === "COMPLETED"
+            ) && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                disabled={loading}
+                className="px-4 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+            )}
           </div>
         )}
 
@@ -300,6 +364,12 @@ export default function AppointmentCard({
             </div>
           </div>
         </div>
+      )}
+      {showConsultation && (
+        <StreamConsultation
+          appointmentId={appointment.id}
+          onClose={() => setShowConsultation(false)}
+        />
       )}
     </>
   );

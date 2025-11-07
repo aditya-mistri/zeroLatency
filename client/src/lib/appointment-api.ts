@@ -28,7 +28,14 @@ export interface Appointment {
   id: string;
   scheduledAt: string;
   duration: number;
-  status: "SCHEDULED" | "CONFIRMED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PAYMENT_PENDING"
+    | "SCHEDULED"
+    | "CONFIRMED"
+    | "IN_PROGRESS"
+    | "COMPLETED"
+    | "CANCELLED";
+  meetingLink?: string;
   notes?: string;
   amount: number;
   paymentStatus: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
@@ -165,6 +172,34 @@ export const appointmentApi = {
     return apiRequest(`/appointments/availability/${doctorId}?date=${date}`);
   },
 
+  // Meeting link management
+  setMeetingLink: async (appointmentId: string, meetingLink: string) => {
+    return apiRequest(`/appointments/${appointmentId}/meeting`, {
+      method: "POST",
+      body: JSON.stringify({ meetingLink }),
+    });
+  },
+
+  getMeetingLink: async (appointmentId: string) => {
+    return apiRequest(`/appointments/${appointmentId}/meeting`);
+  },
+
+  // Chat messages
+  getMessages: async (appointmentId: string) => {
+    return apiRequest(`/appointments/${appointmentId}/messages`);
+  },
+
+  postMessage: async (
+    appointmentId: string,
+    message: string,
+    messageType = "text"
+  ) => {
+    return apiRequest(`/appointments/${appointmentId}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ message, messageType }),
+    });
+  },
+
   // Book appointment
   createAppointment: async (data: {
     doctorId: string;
@@ -221,5 +256,27 @@ export const appointmentApi = {
       method: "PUT",
       body: JSON.stringify({ reason }),
     });
+  },
+
+  // Process payment for appointment
+  processPayment: async (
+    appointmentId: string,
+    paymentData: {
+      paymentMethod: string;
+      cardNumber: string;
+      expiryDate: string;
+      cvv: string;
+      cardholderName: string;
+    }
+  ) => {
+    return apiRequest(`/appointments/${appointmentId}/payment`, {
+      method: "POST",
+      body: JSON.stringify(paymentData),
+    });
+  },
+
+  // Get payment details
+  getPaymentDetails: async (appointmentId: string) => {
+    return apiRequest(`/appointments/${appointmentId}/payment`);
   },
 };

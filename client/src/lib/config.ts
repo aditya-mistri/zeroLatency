@@ -21,7 +21,7 @@ export const config = {
   features: {
     enableNotifications: true,
     enableFileUpload: false, // Will be enabled in next phase
-    enableVideoCall: false, // Future feature
+    enableVideoCall: true, // Stream Video integration
   },
 
   // Pagination defaults
