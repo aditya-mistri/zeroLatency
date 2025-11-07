@@ -9,7 +9,7 @@ import {
   SpeakerLayout,
   Call as StreamCallType,
 } from "@stream-io/video-react-sdk";
-import { StreamChat, Channel as StreamChannel } from "stream-chat";
+import { StreamChat } from "stream-chat";
 import {
   Chat,
   Channel,
@@ -49,7 +49,9 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
   );
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [call, setCall] = useState<StreamCallType | null>(null);
-  const [channel, setChannel] = useState<ReturnType<StreamChat["channel"]> | null>(null);
+  const [channel, setChannel] = useState<ReturnType<
+    StreamChat["channel"]
+  > | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -84,14 +86,20 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
 
         // Initialize Stream Chat
         const chatClientInstance = StreamChat.getInstance(apiKey);
-        
+
         // Only disconnect if a different user is connected
-        if (chatClientInstance.userID && chatClientInstance.userID !== user.id) {
+        if (
+          chatClientInstance.userID &&
+          chatClientInstance.userID !== user.id
+        ) {
           await chatClientInstance.disconnectUser();
         }
-        
+
         // Connect user if not already connected
-        if (!chatClientInstance.userID || chatClientInstance.userID !== user.id) {
+        if (
+          !chatClientInstance.userID ||
+          chatClientInstance.userID !== user.id
+        ) {
           await chatClientInstance.connectUser(
             {
               id: user.id,

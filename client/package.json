@@ -10,14 +10,15 @@
   },
   "dependencies": {
     "@stream-io/video-react-sdk": "^1.25.1",
-    "stream-chat": "^8.40.0",
-    "stream-chat-react": "^12.2.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.552.0",
     "next": "16.0.1",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-hot-toast": "^2.6.0",
     "socket.io-client": "^4.8.1",
+    "stream-chat": "^8.40.0",
+    "stream-chat-react": "^12.2.0",
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {

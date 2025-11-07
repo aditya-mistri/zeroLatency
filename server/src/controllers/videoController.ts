@@ -22,10 +22,7 @@ function getStreamClient(): StreamClient {
   return streamClient;
 }
 
-function withinWindow(
-  scheduledAt: Date,
-  durationMins: number
-): boolean {
+function withinWindow(scheduledAt: Date, durationMins: number): boolean {
   // In development, allow much wider window for testing
   const isDev = process.env.NODE_ENV === "development";
   const earlySeconds = isDev ? 2 * 60 * 60 : 5 * 60; // 2 hours in dev, 5 min in prod
@@ -34,7 +31,7 @@ function withinWindow(
   const start = new Date(scheduledAt);
   const end = new Date(start.getTime() + durationMins * 60000);
   const now = new Date();
-  
+
   return (
     now.getTime() >= start.getTime() - earlySeconds * 1000 &&
     now.getTime() <= end.getTime() + lateSeconds * 1000
@@ -115,7 +112,7 @@ export const getStreamToken = async (req: Request, res: Response) => {
     // }
 
     const client = getStreamClient();
-    
+
     // Create a user token valid for 2 hours
     const expiresInSeconds = 2 * 60 * 60;
     const token = client.createToken(
@@ -161,6 +158,5 @@ export const getStreamToken = async (req: Request, res: Response) => {
 
 // Keep old name for backward compatibility
 export const getVideoToken = getStreamToken;
-
 
 export default { getStreamToken, getVideoToken };
