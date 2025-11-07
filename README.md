@@ -71,10 +71,10 @@ ZeroLatency-connect/
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
 - [x] **Phase 2**: Doctor verification & moderation ✅
 - [x] **Phase 3**: Appointment booking system ✅
-- [ ] **Phase 4**: Payment simulation
-- [ ] **Phase 5**: Video calls & chat
-- [ ] **Phase 6**: Transcription & records
-- [ ] **Phase 7**: QA & final polish
+- [ ] **Phase 4**: Payment simulation ✅
+- [ ] **Phase 5**: Video calls & chat ✅
+- [ ] **Phase 6**: Transcription & records 
+- [ ] **Phase 7**: QA & final polish 
 
 ## User Roles
 
@@ -83,6 +83,7 @@ ZeroLatency-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
 
 
 
