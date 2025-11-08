@@ -116,7 +116,10 @@ export default function AppointmentBooking({
                 };
               }
             )
-            .filter((day: AvailableDateType | null): day is AvailableDateType => day !== null); // Remove null entries
+            .filter(
+              (day: AvailableDateType | null): day is AvailableDateType =>
+                day !== null
+            ); // Remove null entries
           setAvailableDates(datesWithSlots);
 
           // If no dates available, show appropriate message
