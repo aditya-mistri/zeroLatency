@@ -13,7 +13,8 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 - **Patient Portal**: Register, find doctors, and book appointments
 - **Doctor Dashboard**: Manage appointments and host video consultations  
 - **Moderator Panel**: Verify doctor credentials and manage hospitals
-- **Video Consultations**: Secure video calls with chat and transcription
+- **Video Consultations**: Secure video calls with integrated chat
+- **🆕 Live Transcription**: Real-time speech-to-text in 13+ languages to overcome dialect barriers
 - **Mock Payments**: Simulated payment flow using Stripe test mode
 
 ## Product Gallery
@@ -47,8 +48,9 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 - **Deployment**: Render
 
 ### Additional Services
-- **Video Calls**: WebRTC by Stream API
-- **Transcription**: --
+- **Video Calls**: Stream.io Video SDK
+- **Chat**: Stream.io Chat SDK
+- **Live Transcription**: Web Speech API (Browser-based, FREE)
 - **Payments**: Stripe (Test Mode)
 - **File Storage**: Cloudinary
 
@@ -87,18 +89,36 @@ ZeroLatency-connect/
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
 - [x] **Phase 2**: Doctor verification & moderation ✅
 - [x] **Phase 3**: Appointment booking system ✅
-- [ ] **Phase 4**: Payment simulation ✅
-- [ ] **Phase 5**: Video calls & chat ✅
-- [ ] **Phase 6**: Transcription & records 
-- [ ] **Phase 7**: QA & final polish 
+## Development Phases
 
-## User Roles
-
-| Role | Capabilities |
-|------|-------------|
+- [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
+- [x] **Phase 2**: Doctor verification & moderation ✅
+- [x] **Phase 3**: Appointment booking system ✅
+- [x] **Phase 4**: Payment simulation ✅
+- [x] **Phase 5**: Video calls & chat ✅
+- [x] **Phase 6**: Live transcription (English & Hindi) ✅
+- [ ] **Phase 7**: Medical records & history
+- [ ] **Phase 8**: QA & final polish
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
+## 🆕 Key Features
+
+### Live Transcription
+Real-time speech-to-text during video consultations to overcome language and dialect barriers.
+
+**Features:**
+- ✅ Real-time transcription in 13+ languages
+- ✅ Support for multiple dialects (US, UK, Indian English, etc.)
+- ✅ Download transcripts as text files
+- ✅ Free to use (Web Speech API)
+- ✅ Privacy-focused (all processing in browser)
+
+**Supported Languages:**
+🇺🇸 English (US/UK/India) | 🇪🇸 Spanish | 🇫🇷 French | 🇩🇪 German | 🇮🇹 Italian | 🇧🇷 Portuguese | 🇮🇳 Hindi | 🇨🇳 Chinese | 🇯🇵 Japanese | 🇰🇷 Korean | 🇸🇦 Arabic
+
+📖 [Full Documentation](./docs/live-transcription.md) | [Quick Start Guide](./docs/transcription-quick-start.md)
 
 
 
