@@ -151,10 +151,12 @@ export const getDoctorAvailability = async (
       return;
     }
 
-    // Date range (default: next 7 days)
-    const start = startDate ? new Date(startDate as string) : new Date();
+    // Date range (default: next 7 days) - use UTC midnight for consistency
+    const start = startDate 
+      ? new Date(startDate as string + "T00:00:00Z") 
+      : new Date(new Date().toISOString().split("T")[0] + "T00:00:00Z");
     const end = endDate
-      ? new Date(endDate as string)
+      ? new Date(endDate as string + "T00:00:00Z")
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     // Get availability records
@@ -195,7 +197,12 @@ export const getDoctorAvailability = async (
 
       // Mark slots as available/unavailable
       const slots = allSlots.map((timeSlot) => {
-        const slotDateTime = new Date(dateStr + "T" + timeSlot + ":00Z");
+        // Create datetime WITHOUT timezone conversion
+        // timeSlot is like "17:30", we want it to stay "17:30" in display
+        const [hours, minutes] = timeSlot.split(":").map(Number);
+        
+        // Create a Date object for the date in UTC but we'll use it for time comparison only
+        const slotDateTime = new Date(dateStr + "T" + timeSlot + ":00.000Z");
         const now = new Date();
 
         // Check if slot is in past
@@ -207,22 +214,28 @@ export const getDoctorAvailability = async (
           return Math.abs(aptTime.getTime() - slotDateTime.getTime()) < 60000; // Within 1 minute
         });
 
+        // Format time for display - use the time string directly, not converted
+        const hour12 = hours % 12 || 12;
+        const period = hours >= 12 ? "PM" : "AM";
+        const displayTime = `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
+
         return {
           time: timeSlot,
-          displayTime: new Date(slotDateTime).toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
+          displayTime: displayTime, // Now shows correct local time!
           available: !isInPast && !isBooked,
         };
       });
 
-      availableDays.push({
-        date: dateStr,
-        dayOfWeek: record.date.toLocaleDateString("en-US", { weekday: "long" }),
-        slots: slots,
-      });
+      // Only include days that have at least one available slot
+      const availableSlots = slots.filter(slot => slot.available);
+      
+      if (availableSlots.length > 0) {
+        availableDays.push({
+          date: dateStr,
+          dayOfWeek: record.date.toLocaleDateString("en-US", { weekday: "long" }),
+          slots: slots, // Return all slots with availability flag
+        });
+      }
     }
 
     res.json(
@@ -254,7 +267,9 @@ export const getMyAvailability = async (
       return;
     }
 
-    const startDate = new Date();
+    // Use UTC midnight for today and next 30 days
+    const todayStr = new Date().toISOString().split("T")[0];
+    const startDate = new Date(todayStr + "T00:00:00Z");
     const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Next 30 days
 
     const availability = await prisma.doctorAvailability.findMany({
@@ -265,7 +280,10 @@ export const getMyAvailability = async (
       orderBy: { date: "asc" },
     });
 
+    console.log("📅 getMyAvailability - Raw availability records:", JSON.stringify(availability, null, 2));
+
     // Group availability by date to match frontend expectations
+    // CRITICAL: Frontend expects 'slotDurationMinutes' not 'slotDuration'
     const groupedAvailability = availability.reduce(
       (acc, record) => {
         const dateStr = record.date.toISOString().split("T")[0];
@@ -274,7 +292,7 @@ export const getMyAvailability = async (
         const slot = {
           startTime: record.startTime,
           endTime: record.endTime,
-          slotDurationMinutes: record.slotDuration,
+          slotDurationMinutes: record.slotDuration, // Map DB field to frontend field
         };
 
         if (existingDay) {
@@ -362,6 +380,7 @@ export const clearDayAvailability = async (
     }
 
     const { date } = req.params;
+    console.log("🗑️ Clear availability - Input date:", date);
 
     const doctorProfile = await prisma.doctorProfile.findUnique({
       where: { userId: req.user.id },
@@ -372,17 +391,60 @@ export const clearDayAvailability = async (
       return;
     }
 
-    // Delete availability for the specific date
-    await prisma.doctorAvailability.deleteMany({
+    console.log("🗑️ Clear availability - Doctor profile ID:", doctorProfile.id);
+
+    // Parse date to UTC midnight
+    const targetDate = new Date(date + "T00:00:00Z");
+    const nextDay = new Date(targetDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    console.log("🗑️ Clear availability - Target date:", targetDate.toISOString());
+    console.log("🗑️ Clear availability - Next day:", nextDay.toISOString());
+
+    // First, check if availability exists using date range
+    // This is more reliable than exact date matching
+    const existingAvailability = await prisma.doctorAvailability.findMany({
       where: {
         doctorProfileId: doctorProfile.id,
-        date: new Date(date + "T00:00:00Z"),
+        date: {
+          gte: targetDate,
+          lt: nextDay,
+        },
       },
     });
 
-    res.json(formatResponse("success", "Availability cleared for date"));
+    console.log("🗑️ Clear availability - Found records:", existingAvailability.length);
+    if (existingAvailability.length > 0) {
+      console.log("🗑️ Clear availability - Records:", JSON.stringify(existingAvailability, null, 2));
+    }
+
+    // Delete availability for the specific date using date range
+    const deleteResult = await prisma.doctorAvailability.deleteMany({
+      where: {
+        doctorProfileId: doctorProfile.id,
+        date: {
+          gte: targetDate,
+          lt: nextDay,
+        },
+      },
+    });
+
+    console.log("🗑️ Clear availability - Deleted count:", deleteResult.count);
+
+    if (deleteResult.count === 0) {
+      console.log("⚠️ Clear availability - No records deleted");
+      res.json(formatResponse("success", "No availability found for this date", {
+        deletedCount: 0,
+        message: "Date may already be cleared"
+      }));
+      return;
+    }
+
+    res.json(formatResponse("success", "Availability cleared for date", {
+      deletedCount: deleteResult.count
+    }));
   } catch (error) {
-    console.error("Clear availability error:", error);
+    console.error("❌ Clear availability error:", error);
     res
       .status(500)
       .json(formatResponse("error", "Failed to clear availability"));

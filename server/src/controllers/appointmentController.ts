@@ -626,7 +626,8 @@ export const getDoctorAvailability = async (
       return;
     }
 
-    const selectedDate = new Date(date as string);
+    // Parse date consistently - always use UTC midnight
+    const selectedDate = new Date(date as string + "T00:00:00Z");
 
     // Debug logging
     console.log("getDoctorAvailability - Input date:", date);
@@ -739,9 +740,9 @@ function generateAvailableSlots(
     const hours = Math.floor(currentMinutes / 60);
     const minutes = currentMinutes % 60;
 
-    // Create full datetime for this slot
+    // Create full datetime for this slot in UTC
     const slotDateTime = new Date(date);
-    slotDateTime.setHours(hours, minutes, 0, 0);
+    slotDateTime.setUTCHours(hours, minutes, 0, 0);
 
     // Check if slot is in the past
     const now = new Date();
@@ -763,13 +764,14 @@ function generateAvailableSlots(
     });
 
     if (!isInPast && !hasConflict) {
+      // Format time for display - use the time values directly, not converted
+      const hour12 = hours % 12 || 12;
+      const period = hours >= 12 ? "PM" : "AM";
+      const displayTime = `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
+      
       slots.push({
         time: slotDateTime.toISOString(),
-        displayTime: slotDateTime.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
+        displayTime: displayTime, // Shows correct local time
       });
     }
 

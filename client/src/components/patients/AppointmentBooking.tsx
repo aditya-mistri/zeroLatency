@@ -56,50 +56,67 @@ export default function AppointmentBooking({
       setError(null);
 
       // Get availability for next 7 days (including today)
-      const startDate = new Date();
-      // Start from today
-      const endDate = new Date();
+      // Use UTC date string to avoid timezone issues
+      const today = new Date();
+      const startDateStr = today.toISOString().split("T")[0];
+      
+      const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 7);
+      const endDateStr = endDate.toISOString().split("T")[0];
 
       const response = await fetch(
-        `${config.api.baseUrl}/availability/doctor/${doctor.id}?startDate=${startDate.toISOString().split("T")[0]}&endDate=${endDate.toISOString().split("T")[0]}`
+        `${config.api.baseUrl}/availability/doctor/${doctor.id}?startDate=${startDateStr}&endDate=${endDateStr}`
       );
 
       if (response.ok) {
         const result = await response.json();
         if (result.status === "success" && result.data?.availableDays) {
-          const datesWithSlots = result.data.availableDays.map(
-            (day: {
-              date: string;
-              dayOfWeek: string;
-              slots: Array<{
-                time: string;
-                displayTime: string;
-                available: boolean;
-              }>;
-            }) => ({
-              value: day.date,
-              label: new Date(day.date + "T00:00:00").toLocaleDateString(
-                "en-US",
-                {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
+          const datesWithSlots = result.data.availableDays
+            .map(
+              (day: {
+                date: string;
+                dayOfWeek: string;
+                slots: Array<{
+                  time: string;
+                  displayTime: string;
+                  available: boolean;
+                }>;
+              }) => {
+                // Count only available slots
+                const availableSlotsCount = day.slots.filter(
+                  (slot) => slot.available
+                ).length;
+
+                // Skip days with no available slots
+                if (availableSlotsCount === 0) {
+                  return null;
                 }
-              ),
-              fullDate: new Date(day.date + "T00:00:00").toLocaleDateString(
-                "en-US",
-                {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }
-              ),
-              dayOfWeek: day.dayOfWeek,
-              slotsCount: day.slots.length,
-            })
-          );
+
+                return {
+                  value: day.date,
+                  label: new Date(day.date + "T00:00:00").toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                    }
+                  ),
+                  fullDate: new Date(day.date + "T00:00:00").toLocaleDateString(
+                    "en-US",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    }
+                  ),
+                  dayOfWeek: day.dayOfWeek,
+                  slotsCount: availableSlotsCount,
+                };
+              }
+            )
+            .filter((day) => day !== null); // Remove null entries
           setAvailableDates(datesWithSlots);
 
           // If no dates available, show appropriate message
