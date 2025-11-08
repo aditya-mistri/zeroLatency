@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context";
 import { config } from "@/lib/config";
 import PaymentForm from "../payments/PaymentForm";
 import { ArrowLeft, Calendar, Clock, IndianRupee, MapPin } from "lucide-react";
+import { istToUTC, formatISTDate, getCurrentISTDate } from "@/lib/timezone-utils";
 
 interface AppointmentBookingProps {
   doctor: Doctor;
@@ -55,14 +56,14 @@ export default function AppointmentBooking({
       setLoadingDates(true);
       setError(null);
 
-      // Get availability for next 7 days (including today)
-      // Use UTC date string to avoid timezone issues
-      const today = new Date();
-      const startDateStr = today.toISOString().split("T")[0];
+      // Get availability for next 7 days (including today) in IST
+      const todayIST = getCurrentISTDate();
+      const startDateStr = todayIST;
 
-      const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + 7);
-      const endDateStr = endDate.toISOString().split("T")[0];
+      // Calculate end date (7 days from today in IST)
+      const endDateIST = new Date(todayIST);
+      endDateIST.setDate(endDateIST.getDate() + 7);
+      const endDateStr = endDateIST.toISOString().split("T")[0];
 
       const response = await fetch(
         `${config.api.baseUrl}/availability/doctor/${doctor.id}?startDate=${startDateStr}&endDate=${endDateStr}`
@@ -92,25 +93,13 @@ export default function AppointmentBooking({
                   return null;
                 }
 
+                // Use our IST date formatting function
+                const formatted = formatISTDate(day.date);
+
                 return {
                   value: day.date,
-                  label: new Date(day.date + "T00:00:00").toLocaleDateString(
-                    "en-US",
-                    {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                    }
-                  ),
-                  fullDate: new Date(day.date + "T00:00:00").toLocaleDateString(
-                    "en-US",
-                    {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    }
-                  ),
+                  label: formatted.short,
+                  fullDate: formatted.long,
                   dayOfWeek: day.dayOfWeek,
                   slotsCount: availableSlotsCount,
                 };
@@ -191,11 +180,12 @@ export default function AppointmentBooking({
       setLoading(true);
       setError(null);
 
-      const scheduledAt = new Date(`${selectedDate}T${selectedTime}`);
+      // Convert IST date and time to UTC ISO string
+      const scheduledAtUTC = istToUTC(selectedDate, selectedTime);
 
       const response = await appointmentApi.createAppointment({
         doctorId: doctor.id,
-        scheduledAt: scheduledAt.toISOString(),
+        scheduledAt: scheduledAtUTC,
         notes: notes.trim() || undefined,
         duration: 30,
       });
@@ -351,6 +341,14 @@ export default function AppointmentBooking({
           <h3 className="text-lg font-semibold mb-4 text-gray-900">
             Select Date & Time
           </h3>
+          
+          {/* Timezone Notice */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <Clock className="inline h-4 w-4 mr-1" />
+              All times shown are in <strong>Indian Standard Time (IST)</strong>
+            </p>
+          </div>
 
           {/* Date Selection */}
           <div className="mb-6">
@@ -421,24 +419,30 @@ export default function AppointmentBooking({
                 </div>
               ) : availableSlots.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      onClick={() =>
-                        setSelectedTime(
-                          new Date(slot.time).toTimeString().slice(0, 5)
-                        )
-                      }
-                      className={`p-3 text-center border rounded-lg transition-colors ${
-                        selectedTime ===
-                        new Date(slot.time).toTimeString().slice(0, 5)
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-gray-400 text-gray-900"
-                      }`}
-                    >
-                      {slot.displayTime}
-                    </button>
-                  ))}
+                  {availableSlots.map((slot) => {
+                    // Extract time in IST format (HH:MM)
+                    const slotDate = new Date(slot.time);
+                    const istTime = slotDate.toLocaleTimeString("en-GB", {
+                      timeZone: "Asia/Kolkata",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    });
+                    
+                    return (
+                      <button
+                        key={slot.time}
+                        onClick={() => setSelectedTime(istTime)}
+                        className={`p-3 text-center border rounded-lg transition-colors ${
+                          selectedTime === istTime
+                            ? "border-blue-500 bg-blue-50 text-blue-700"
+                            : "border-gray-300 hover:border-gray-400 text-gray-900"
+                        }`}
+                      >
+                        {slot.displayTime}
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">

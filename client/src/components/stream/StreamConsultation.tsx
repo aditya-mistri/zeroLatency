@@ -18,6 +18,7 @@ import {
   MessageInput,
   Thread,
   ChannelHeader,
+  Message as DefaultMessageComponent,
 } from "stream-chat-react";
 import config from "@/lib/config";
 import { LiveTranscription } from "@/components/video/LiveTranscription";
@@ -61,8 +62,16 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
     id: string;
     name: string;
   } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component only runs on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!isMounted) return; // Don't run on server
+    
     const init = async () => {
       setLoading(true);
       try {
@@ -177,7 +186,12 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         return null;
       });
     };
-  }, [appointmentId]);
+  }, [appointmentId, isMounted]);
+
+  // Don't render anything on server
+  if (!isMounted) {
+    return null;
+  }
 
   if (loading)
     return (
@@ -246,10 +260,39 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
           } bg-white border-r flex flex-col`}
         >
           <Chat client={chatClient} theme="messaging light">
-            <Channel channel={channel}>
+            <Channel 
+              channel={channel}
+            >
               <Window>
                 <ChannelHeader />
-                <MessageList />
+                <MessageList
+                  messageRenderer={(messageProps) => {
+                    const msg: any = messageProps.message;
+                    
+                    // Debug: log the FULL message object to see all fields
+                    if (msg) {
+                      console.log('[ChatDebug] FULL MESSAGE OBJECT:', JSON.stringify(msg, null, 2));
+                      console.log('[ChatDebug] Message keys:', Object.keys(msg));
+                    }
+                    
+                    // Normalize custom type fields (some SDKs use custom_type)
+                    const customType = msg?.customType || msg?.custom_type || msg?.type;
+
+                    // Debugging: log message id and customType when transcriptions still appear
+                    // Also hide transcription messages originating from the current user (safety)
+                    if (customType === "transcription" || (msg?.user?.id && currentUser?.id && msg.user.id === currentUser.id && customType)) {
+                      console.log('[ChatDebug] FILTERING OUT transcription:', { id: msg?.id, text: msg?.text, customType, user: msg?.user });
+                      return null;
+                    }
+
+                    // If no message present (system UI), let Stream render it
+                    if (!msg) return undefined;
+
+                    // Debug: log other messages that will be rendered
+                    console.log('[ChatDebug] RENDERING message:', { id: msg?.id, text: msg?.text, customType, user: msg?.user });
+                    return undefined; // Use default renderer for normal messages
+                  }}
+                />
                 <MessageInput />
               </Window>
               <Thread />
@@ -280,7 +323,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         )}
 
         {/* Live Transcription Section */}
-        {showTranscript && currentUser && (
+        {showTranscript && currentUser && channel && (
           <div
             className={`${
               showVideo ? "w-1/4" : "flex-1"
@@ -290,6 +333,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
               userId={currentUser.id}
               userName={currentUser.name}
               language="en-US"
+              channel={channel}
             />
           </div>
         )}

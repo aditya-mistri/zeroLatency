@@ -80,19 +80,29 @@ export default function AppointmentCard({
   };
 
   const formatDateTime = (dateString: string) => {
+    // Convert UTC to IST for display
     const date = new Date(dateString);
+    
+    // Format date in IST
+    const dateFormatted = date.toLocaleDateString("en-US", {
+      timeZone: "Asia/Kolkata",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    
+    // Format time in IST
+    const timeFormatted = date.toLocaleTimeString("en-US", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    
     return {
-      date: date.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      time: date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      date: dateFormatted,
+      time: `${timeFormatted} IST`,
     };
   };
 
