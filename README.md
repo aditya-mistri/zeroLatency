@@ -5,8 +5,7 @@
 ## Live Demo
 - **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
 - **Backend API**: [https://zerolatency-xf57.onrender.com/api](https://zerolatency-xf57.onrender.com/api)
-
-## Always live - with the help of Cron-Jobs 
+- **Always live - with the help of Cron-Jobs** 
 
 ## Project Overview
 
@@ -84,6 +83,7 @@ ZeroLatency-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
 
 
 
