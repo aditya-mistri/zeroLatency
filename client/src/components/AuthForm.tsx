@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface AuthFormProps {
   mode: "login" | "register";
   onToggle: () => void;
+  initialRole?: UserRole;
 }
 
 const roleOptions = [
@@ -32,7 +33,11 @@ const roleOptions = [
   },
 ];
 
-export default function AuthForm({ mode, onToggle }: AuthFormProps) {
+export default function AuthForm({
+  mode,
+  onToggle,
+  initialRole,
+}: AuthFormProps) {
   const { login, register, loading } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -41,7 +46,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
     firstName: "",
     lastName: "",
     phone: "",
-    role: UserRole.PATIENT,
+    role: initialRole || UserRole.PATIENT,
     // Doctor specific
     specialization: "",
     experience: "",
@@ -126,7 +131,7 @@ export default function AuthForm({ mode, onToggle }: AuthFormProps) {
   const isPatient = formData.role === UserRole.PATIENT;
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           {mode === "login" ? "Welcome Back" : "Create Account"}

@@ -1,6 +1,6 @@
-# 🏥 TeleHealth Connect
+# ZeroLatency Connect
 
-> A full-stack Telehealth web platform that enables patients to connect with verified doctors for remote consultations.
+> A full-stack telehealth web platform that enables patients to connect with verified doctors for remote consultations.
 
 ## Live Demo
 - **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
@@ -39,7 +39,7 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 ## Project Structure
 
 ```
-telehealth-connect/
+ZeroLatency-connect/
 ├── client/                 # Next.js frontend
 │   ├── app/                # App router pages
 │   ├── components/         # Reusable UI components
@@ -71,8 +71,8 @@ telehealth-connect/
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
 - [x] **Phase 2**: Doctor verification & moderation ✅
 - [x] **Phase 3**: Appointment booking system ✅
-- [ ] **Phase 4**: Payment simulation
-- [ ] **Phase 5**: Video calls & chat
+- [ ] **Phase 4**: Payment simulation ✅
+- [ ] **Phase 5**: Video calls & chat ✅
 - [ ] **Phase 6**: Transcription & records
 - [ ] **Phase 7**: QA & final polish
 

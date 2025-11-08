@@ -12,7 +12,7 @@ export const config = {
   // App Configuration
   app: {
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:5173",
-    name: "TeleHealth Connect",
+    name: "ZeroLatency Connect",
     version: "2.0.0",
     environment: process.env.NODE_ENV || "development",
   },

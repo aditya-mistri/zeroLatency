@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
-import AuthForm from "@/components/AuthForm";
+import AuthModal from "@/components/AuthModal";
 import PatientDashboard from "@/components/PatientDashboard";
 import DoctorDashboard from "@/components/DoctorDashboard";
 import {
@@ -18,7 +19,7 @@ import {
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   if (loading) {
     return (
@@ -33,9 +34,9 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-green-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
@@ -44,7 +45,7 @@ export default function Home() {
                 ZeroLatency Health-Connect
               </span>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-gray-600 hover:text-blue-600">
                 Features
               </a>
@@ -54,13 +55,23 @@ export default function Home() {
               >
                 How It Works
               </a>
-              <a href="#about" className="text-gray-600 hover:text-blue-600">
-                About
-              </a>
+
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Join Us
+              </button>
             </nav>
           </div>
         </div>
       </header>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
@@ -92,7 +103,7 @@ export default function Home() {
             </div>
 
             <button
-              onClick={() => setAuthMode("register")}
+              onClick={() => setIsAuthModalOpen(true)}
               className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors"
             >
               Get Started Today
@@ -100,12 +111,16 @@ export default function Home() {
           </div>
 
           <div className="lg:w-1/2 lg:pl-8">
-            <AuthForm
-              mode={authMode}
-              onToggle={() =>
-                setAuthMode(authMode === "login" ? "register" : "login")
-              }
-            />
+            <div className="bg-white rounded-lg shadow-xl overflow-hidden">
+              <Image
+                src="/heroImg.jpg"
+                alt="Healthcare professional providing consultation"
+                width={600}
+                height={400}
+                className="w-full h-auto"
+                priority
+              />
+            </div>
           </div>
         </div>
 
@@ -147,18 +162,6 @@ export default function Home() {
         </section>
 
         {/* Stats Section */}
-        <section className="py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((stat, index) => (
-              <div key={index}>
-                <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
       {/* Footer */}
@@ -170,10 +173,6 @@ export default function Home() {
               ZeroLatency Connect
             </span>
           </div>
-          <p className="text-gray-400">
-            © 2024 ZeroLatency Connect. All rights reserved. Built with ❤️ for
-            accessible healthcare.
-          </p>
         </div>
       </footer>
     </div>
@@ -217,7 +216,7 @@ function Dashboard() {
             <div className="flex items-center">
               <Heart className="h-8 w-8 text-blue-600" />
               <span className="ml-2 text-xl font-bold text-gray-900">
-                TeleHealth Connect
+                ZeroLatency Connect
               </span>
             </div>
             <div className="flex items-center space-x-4">
@@ -404,8 +403,8 @@ const steps = [
 ];
 
 const stats = [
-  { value: "1000+", label: "Doctors" },
-  { value: "50K+", label: "Patients" },
-  { value: "100K+", label: "Consultations" },
-  { value: "4.9★", label: "Rating" },
+  { value: "Built for", label: "Hackathon" },
+  { value: "Full Stack", label: "Solution" },
+  { value: "Real-time", label: "Video & Chat" },
+  { value: "Secure", label: "Payments" },
 ];

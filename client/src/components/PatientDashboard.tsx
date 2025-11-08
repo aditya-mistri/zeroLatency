@@ -97,7 +97,7 @@ export default function PatientDashboard() {
         >
           <div className="flex items-center justify-between mb-4">
             <CalendarCheck className="h-8 w-8 text-green-600" />
-            <div className="text-xs text-gray-500">Coming Soon</div>
+            <div className="text-xs text-gray-500">Active</div>
           </div>
           <h3 className="font-semibold text-gray-900 mb-2">My Appointments</h3>
           <p className="text-sm text-gray-600">
@@ -129,29 +129,33 @@ export default function PatientDashboard() {
       {/* Features Overview */}
       <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          🎉 Appointment Booking
+          Full-Featured Telehealth Platform
         </h3>
         <div className="grid md:grid-cols-2 gap-6">
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Now Available:</h4>
+            <h4 className="font-medium text-gray-900 mb-2">
+              Appointment Booking:
+            </h4>
             <ul className="space-y-1 text-sm text-gray-600">
-              <li>✅ Search verified doctors by specialization</li>
-              <li>✅ Filter by location and consultation fee</li>
-              <li>✅ View doctor profiles and experience</li>
-              <li>✅ Check real-time availability</li>
-              <li>✅ Book appointments instantly</li>
-              <li>✅ 30-minute consultation slots</li>
+              <li>• Search verified doctors by specialization</li>
+              <li>• Filter by location and consultation fee</li>
+              <li>• View doctor profiles and experience</li>
+              <li>• Check real-time availability</li>
+              <li>• Book appointments instantly</li>
+              <li>• 30-minute consultation slots</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Coming Next:</h4>
-            <ul className="space-y-1 text-sm text-gray-400">
-              <li>⏳ Payment integration</li>
-              <li>⏳ Email confirmations</li>
-              <li>⏳ Appointment reminders</li>
-              <li>⏳ Consultation history</li>
-              <li>⏳ Prescription management</li>
-              <li>⏳ Video call integration</li>
+            <h4 className="font-medium text-gray-900 mb-2">
+              Consultation Features:
+            </h4>
+            <ul className="space-y-1 text-sm text-gray-600">
+              <li>• Secure payment processing</li>
+              <li>• HD video consultations</li>
+              <li>• Real-time chat messaging</li>
+              <li>• Appointment management</li>
+              <li>• Consultation history</li>
+              <li>• End-to-end encryption</li>
             </ul>
           </div>
         </div>

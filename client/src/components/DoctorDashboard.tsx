@@ -25,18 +25,6 @@ export default function DoctorDashboard() {
 
     const status = user.doctorProfile.status;
     switch (status) {
-      case "APPROVED":
-        return {
-          icon: CheckCircle,
-          bgColor: "bg-green-50",
-          borderColor: "border-green-200",
-          textColor: "text-green-900",
-          iconColor: "text-green-600",
-          title: "Account Approved ✅",
-          message:
-            "Your account has been verified! You can now start accepting appointments and conducting consultations.",
-          actionButton: null,
-        };
       case "REJECTED":
         return {
           icon: XCircle,
@@ -53,7 +41,7 @@ export default function DoctorDashboard() {
             </button>
           ),
         };
-      default:
+      case "PENDING":
         return {
           icon: AlertTriangle,
           bgColor: "bg-yellow-50",
@@ -72,6 +60,8 @@ export default function DoctorDashboard() {
             </button>
           ),
         };
+      default:
+        return null;
     }
   };
 
@@ -335,23 +325,12 @@ export default function DoctorDashboard() {
               </li>
             </ul>
           </div>
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Coming Soon:</h4>
-            <ul className="space-y-1 text-sm text-gray-400">
-              <li>⏳ Advanced scheduling & availability</li>
-              <li>⏳ Patient consultation history</li>
-              <li>⏳ Video call integration</li>
-              <li>⏳ Prescription writing tools</li>
-              <li>⏳ Revenue tracking & analytics</li>
-              <li>⏳ Patient communication tools</li>
-            </ul>
-          </div>
         </div>
 
         {!isApproved && (
           <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
             <h4 className="font-medium text-yellow-900 mb-2">
-              🚀 Ready to Start Practicing?
+              Ready to Start Practicing?
             </h4>
             <p className="text-sm text-yellow-800">
               Once your account is verified, you&apos;ll be able to receive
