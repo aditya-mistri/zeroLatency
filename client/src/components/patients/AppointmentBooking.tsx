@@ -35,15 +35,15 @@ export default function AppointmentBooking({
   const [showPayment, setShowPayment] = useState(false);
   const [createdAppointment, setCreatedAppointment] =
     useState<Appointment | null>(null);
-  const [availableDates, setAvailableDates] = useState<
-    {
-      value: string;
-      label: string;
-      fullDate: string;
-      dayOfWeek: string;
-      slotsCount: number;
-    }[]
-  >([]);
+  type AvailableDateType = {
+    value: string;
+    label: string;
+    fullDate: string;
+    dayOfWeek: string;
+    slotsCount: number;
+  };
+
+  const [availableDates, setAvailableDates] = useState<AvailableDateType[]>([]);
 
   // Fetch doctor's available dates on component mount
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function AppointmentBooking({
                 };
               }
             )
-            .filter((day) => day !== null); // Remove null entries
+            .filter((day: AvailableDateType | null): day is AvailableDateType => day !== null); // Remove null entries
           setAvailableDates(datesWithSlots);
 
           // If no dates available, show appropriate message
