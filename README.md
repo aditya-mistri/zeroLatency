@@ -3,8 +3,9 @@
 > A full-stack telehealth web platform that enables patients to connect with verified doctors for remote consultations.
 
 ## Live Demo
-- **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
-- **Backend API**: [https://zerolatency-xf57.onrender.com/api](https://zerolatency-xf57.onrender.com/api)
+- **Frontend**: [Vercel](https://zero-latency-rouge.vercel.app)
+- **Backend API**: [Render](https://zerolatency-xf57.onrender.com/api)
+- **Figma Design**: [Figma](https://www.figma.com/make/7nDMWYVGWQZU9bBOzCSBwy/Telehealth-Application-Design)
 - **Always live - with the help of Cron-Jobs** 
 
 ## Project Overview
@@ -99,6 +100,7 @@ ZeroLatency-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
 
 
 
