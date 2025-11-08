@@ -5,7 +5,6 @@
 ## Live Demo
 - **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
 - **Backend API**: [https://zerolatency-xf57.onrender.com/api](https://zerolatency-xf57.onrender.com/api)
-- **Local Development**: Frontend on port 5173, Backend on port 5000
 
 ## Project Overview
 
@@ -73,8 +72,13 @@ ZeroLatency-connect/
 - [x] **Phase 3**: Appointment booking system ✅
 - [ ] **Phase 4**: Payment simulation ✅
 - [ ] **Phase 5**: Video calls & chat ✅
+<<<<<<< HEAD
 - [ ] **Phase 6**: Transcription & records
 - [ ] **Phase 7**: QA & final polish
+=======
+- [ ] **Phase 6**: Transcription & records 
+- [ ] **Phase 7**: QA & final polish 
+>>>>>>> 5252a4277999e38d2c926520f5846dbc7e96b8cf
 
 ## User Roles
 
@@ -83,6 +87,9 @@ ZeroLatency-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
+
+
 
 
 
