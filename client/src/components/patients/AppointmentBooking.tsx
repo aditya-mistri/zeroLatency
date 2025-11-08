@@ -282,7 +282,9 @@ export default function AppointmentBooking({
       <div className="grid md:grid-cols-2 gap-8">
         {/* Doctor Info */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">Doctor Information</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Doctor Information
+          </h3>
 
           <div className="flex items-start space-x-4 mb-4">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
@@ -318,7 +320,9 @@ export default function AppointmentBooking({
             <div className="flex items-center space-x-2 mb-4 text-gray-600">
               <MapPin className="h-4 w-4" />
               <div>
-                <p className="font-medium text-gray-900">{doctor.hospital.name}</p>
+                <p className="font-medium text-gray-900">
+                  {doctor.hospital.name}
+                </p>
                 <p className="text-sm text-gray-600">
                   {doctor.hospital.city}, {doctor.hospital.state}
                 </p>
@@ -344,7 +348,9 @@ export default function AppointmentBooking({
 
         {/* Booking Form */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900">Select Date & Time</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">
+            Select Date & Time
+          </h3>
 
           {/* Date Selection */}
           <div className="mb-6">
@@ -437,8 +443,12 @@ export default function AppointmentBooking({
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-gray-600">No available slots for this date</p>
-                  <p className="text-sm text-gray-600">Please select another date</p>
+                  <p className="text-gray-600">
+                    No available slots for this date
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Please select another date
+                  </p>
                 </div>
               )}
             </div>
