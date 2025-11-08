@@ -627,7 +627,7 @@ export const getDoctorAvailability = async (
     }
 
     // Parse date consistently - always use UTC midnight
-    const selectedDate = new Date(date as string + "T00:00:00Z");
+    const selectedDate = new Date((date as string) + "T00:00:00Z");
 
     // Debug logging
     console.log("getDoctorAvailability - Input date:", date);
@@ -768,7 +768,7 @@ function generateAvailableSlots(
       const hour12 = hours % 12 || 12;
       const period = hours >= 12 ? "PM" : "AM";
       const displayTime = `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
-      
+
       slots.push({
         time: slotDateTime.toISOString(),
         displayTime: displayTime, // Shows correct local time

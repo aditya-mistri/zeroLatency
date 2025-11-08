@@ -152,11 +152,11 @@ export const getDoctorAvailability = async (
     }
 
     // Date range (default: next 7 days) - use UTC midnight for consistency
-    const start = startDate 
-      ? new Date(startDate as string + "T00:00:00Z") 
+    const start = startDate
+      ? new Date((startDate as string) + "T00:00:00Z")
       : new Date(new Date().toISOString().split("T")[0] + "T00:00:00Z");
     const end = endDate
-      ? new Date(endDate as string + "T00:00:00Z")
+      ? new Date((endDate as string) + "T00:00:00Z")
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     // Get availability records
@@ -200,7 +200,7 @@ export const getDoctorAvailability = async (
         // Create datetime WITHOUT timezone conversion
         // timeSlot is like "17:30", we want it to stay "17:30" in display
         const [hours, minutes] = timeSlot.split(":").map(Number);
-        
+
         // Create a Date object for the date in UTC but we'll use it for time comparison only
         const slotDateTime = new Date(dateStr + "T" + timeSlot + ":00.000Z");
         const now = new Date();
@@ -227,12 +227,14 @@ export const getDoctorAvailability = async (
       });
 
       // Only include days that have at least one available slot
-      const availableSlots = slots.filter(slot => slot.available);
-      
+      const availableSlots = slots.filter((slot) => slot.available);
+
       if (availableSlots.length > 0) {
         availableDays.push({
           date: dateStr,
-          dayOfWeek: record.date.toLocaleDateString("en-US", { weekday: "long" }),
+          dayOfWeek: record.date.toLocaleDateString("en-US", {
+            weekday: "long",
+          }),
           slots: slots, // Return all slots with availability flag
         });
       }
@@ -280,7 +282,10 @@ export const getMyAvailability = async (
       orderBy: { date: "asc" },
     });
 
-    console.log("📅 getMyAvailability - Raw availability records:", JSON.stringify(availability, null, 2));
+    console.log(
+      "📅 getMyAvailability - Raw availability records:",
+      JSON.stringify(availability, null, 2)
+    );
 
     // Group availability by date to match frontend expectations
     // CRITICAL: Frontend expects 'slotDurationMinutes' not 'slotDuration'
@@ -397,8 +402,11 @@ export const clearDayAvailability = async (
     const targetDate = new Date(date + "T00:00:00Z");
     const nextDay = new Date(targetDate);
     nextDay.setDate(nextDay.getDate() + 1);
-    
-    console.log("🗑️ Clear availability - Target date:", targetDate.toISOString());
+
+    console.log(
+      "🗑️ Clear availability - Target date:",
+      targetDate.toISOString()
+    );
     console.log("🗑️ Clear availability - Next day:", nextDay.toISOString());
 
     // First, check if availability exists using date range
@@ -413,9 +421,15 @@ export const clearDayAvailability = async (
       },
     });
 
-    console.log("🗑️ Clear availability - Found records:", existingAvailability.length);
+    console.log(
+      "🗑️ Clear availability - Found records:",
+      existingAvailability.length
+    );
     if (existingAvailability.length > 0) {
-      console.log("🗑️ Clear availability - Records:", JSON.stringify(existingAvailability, null, 2));
+      console.log(
+        "🗑️ Clear availability - Records:",
+        JSON.stringify(existingAvailability, null, 2)
+      );
     }
 
     // Delete availability for the specific date using date range
@@ -433,16 +447,20 @@ export const clearDayAvailability = async (
 
     if (deleteResult.count === 0) {
       console.log("⚠️ Clear availability - No records deleted");
-      res.json(formatResponse("success", "No availability found for this date", {
-        deletedCount: 0,
-        message: "Date may already be cleared"
-      }));
+      res.json(
+        formatResponse("success", "No availability found for this date", {
+          deletedCount: 0,
+          message: "Date may already be cleared",
+        })
+      );
       return;
     }
 
-    res.json(formatResponse("success", "Availability cleared for date", {
-      deletedCount: deleteResult.count
-    }));
+    res.json(
+      formatResponse("success", "Availability cleared for date", {
+        deletedCount: deleteResult.count,
+      })
+    );
   } catch (error) {
     console.error("❌ Clear availability error:", error);
     res

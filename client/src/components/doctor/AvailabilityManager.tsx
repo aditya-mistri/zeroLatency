@@ -61,14 +61,14 @@ const AvailabilityManager: React.FC = () => {
   useEffect(() => {
     const days = getNext7Days();
     setNext7Days(days);
-    
+
     // Initialize schedules with default values
     const initialSchedules: Record<string, DaySchedule> = {};
     days.forEach((day) => {
       initialSchedules[day.date] = day;
     });
     setSchedules(initialSchedules);
-    
+
     // Fetch saved availabilities
     fetchDoctorAvailabilities();
   }, []); // Run once on mount
@@ -100,7 +100,7 @@ const AvailabilityManager: React.FC = () => {
             if (updated[av.date] && av.slots && av.slots.length > 0) {
               const slot = av.slots[0]; // Take first slot
               console.log("Processing slot:", slot); // Debug log
-              
+
               updated[av.date] = {
                 ...updated[av.date],
                 startTime: slot.startTime,
@@ -190,19 +190,22 @@ const AvailabilityManager: React.FC = () => {
 
   const clearAvailability = async (date: string) => {
     console.log("🗑️ Frontend - Clearing availability for date:", date);
-    
+
     setClearing((prev) => ({ ...prev, [date]: true }));
-    
+
     try {
       const token = localStorage.getItem("authToken");
-      
+
       if (!token) {
         toast.error("Please log in to clear availability");
         return;
       }
 
-      console.log("🗑️ Frontend - Making DELETE request to:", `${config.api.baseUrl}/availability/clear/${date}`);
-      
+      console.log(
+        "🗑️ Frontend - Making DELETE request to:",
+        `${config.api.baseUrl}/availability/clear/${date}`
+      );
+
       const response = await fetch(
         `${config.api.baseUrl}/availability/clear/${date}`,
         {
@@ -443,7 +446,10 @@ const AvailabilityManager: React.FC = () => {
                         {schedule.isSet && (
                           <button
                             onClick={() => {
-                              console.log("🗑️ Delete button clicked for:", day.date);
+                              console.log(
+                                "🗑️ Delete button clicked for:",
+                                day.date
+                              );
                               clearAvailability(day.date);
                             }}
                             disabled={clearing[day.date]}

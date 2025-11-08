@@ -59,7 +59,7 @@ export default function AppointmentBooking({
       // Use UTC date string to avoid timezone issues
       const today = new Date();
       const startDateStr = today.toISOString().split("T")[0];
-      
+
       const endDate = new Date(today);
       endDate.setDate(endDate.getDate() + 7);
       const endDateStr = endDate.toISOString().split("T")[0];
