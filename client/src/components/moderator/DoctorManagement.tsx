@@ -221,7 +221,7 @@ export default function DoctorManagement({
                         {doctor.experience} years experience
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
-                        <DollarSign className="h-3 w-3 mr-1" />$
+                        $
                         {doctor.consultationFee} consultation
                       </div>
                     </td>

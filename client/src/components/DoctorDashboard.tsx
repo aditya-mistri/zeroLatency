@@ -164,7 +164,7 @@ export default function DoctorDashboard() {
                     </h4>
                     <div className="space-y-1 text-sm text-green-800">
                       <p>
-                        <strong>Consultation Fee:</strong> ₹
+                        <strong>Consultation Fee:</strong>
                         {user.doctorProfile.consultationFee}
                       </p>
                       {user.doctorProfile.hospital && (

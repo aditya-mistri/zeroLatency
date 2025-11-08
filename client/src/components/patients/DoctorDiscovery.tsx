@@ -323,7 +323,7 @@ export default function DoctorDiscovery({
 
             {/* Fee */}
             <div className="flex items-center space-x-2 mb-4">
-              <DollarSign className="h-4 w-4 text-green-600" />
+              
               <span className="font-semibold text-green-600">
                 ₹{doctor.consultationFee}
               </span>

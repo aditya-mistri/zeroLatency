@@ -150,7 +150,7 @@ export default function AppointmentCard({
           </div>
 
           <div className="flex items-center text-green-600 font-medium">
-            <DollarSign className="h-4 w-4 mr-1" />${appointment.amount}
+            ${appointment.amount}
           </div>
         </div>
 
@@ -227,7 +227,7 @@ export default function AppointmentCard({
         {appointment.status === "PAYMENT_PENDING" && (
           <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex items-center">
-              <DollarSign className="h-5 w-5 text-orange-600 mr-2" />
+              
               <div>
                 <p className="text-sm font-medium text-orange-800">
                   Payment Required
@@ -256,7 +256,6 @@ export default function AppointmentCard({
                   disabled={loading}
                   className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors flex items-center"
                 >
-                  <DollarSign className="h-4 w-4 mr-1" />
                   Pay Now (₹{appointment.amount})
                 </button>
               )}

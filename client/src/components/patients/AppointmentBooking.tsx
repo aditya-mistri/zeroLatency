@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { config } from "@/lib/config";
 import PaymentForm from "../payments/PaymentForm";
-import { ArrowLeft, Calendar, Clock, DollarSign, MapPin } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, IndianRupee, MapPin } from "lucide-react";
 
 interface AppointmentBookingProps {
   doctor: Doctor;
@@ -282,7 +282,7 @@ export default function AppointmentBooking({
       <div className="grid md:grid-cols-2 gap-8">
         {/* Doctor Info */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Doctor Information</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Doctor Information</h3>
 
           <div className="flex items-start space-x-4 mb-4">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
@@ -318,8 +318,8 @@ export default function AppointmentBooking({
             <div className="flex items-center space-x-2 mb-4 text-gray-600">
               <MapPin className="h-4 w-4" />
               <div>
-                <p className="font-medium">{doctor.hospital.name}</p>
-                <p className="text-sm">
+                <p className="font-medium text-gray-900">{doctor.hospital.name}</p>
+                <p className="text-sm text-gray-600">
                   {doctor.hospital.city}, {doctor.hospital.state}
                 </p>
               </div>
@@ -327,9 +327,9 @@ export default function AppointmentBooking({
           )}
 
           <div className="flex items-center space-x-2 mb-4">
-            <DollarSign className="h-5 w-5 text-green-600" />
+            <IndianRupee className="h-5 w-5 text-green-600" />
             <span className="text-xl font-semibold text-green-600">
-              ₹{doctor.consultationFee}
+              {doctor.consultationFee}
             </span>
             <span className="text-gray-600">consultation fee</span>
           </div>
@@ -344,11 +344,11 @@ export default function AppointmentBooking({
 
         {/* Booking Form */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Select Date & Time</h3>
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Select Date & Time</h3>
 
           {/* Date Selection */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-gray-900 mb-3">
               <Calendar className="h-4 w-4 inline mr-1" />
               Select Date
             </label>
@@ -372,7 +372,7 @@ export default function AppointmentBooking({
                     className={`p-3 text-left border rounded-lg transition-colors ${
                       selectedDate === date.value
                         ? "border-blue-500 bg-blue-50 text-blue-700"
-                        : "border-gray-300 hover:border-gray-400"
+                        : "border-gray-300 hover:border-gray-400 text-gray-900"
                     }`}
                   >
                     <div className="font-medium">{date.label}</div>
@@ -386,8 +386,8 @@ export default function AppointmentBooking({
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="font-medium">No availability set</p>
-                <p className="text-sm">
+                <p className="font-medium text-gray-700">No availability set</p>
+                <p className="text-sm text-gray-600">
                   Doctor has not set availability for the next 7 days.
                 </p>
                 <button
@@ -403,7 +403,7 @@ export default function AppointmentBooking({
           {/* Time Selection */}
           {selectedDate && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-900 mb-3">
                 <Clock className="h-4 w-4 inline mr-1" />
                 Available Time Slots
               </label>
@@ -427,7 +427,7 @@ export default function AppointmentBooking({
                         selectedTime ===
                         new Date(slot.time).toTimeString().slice(0, 5)
                           ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-gray-400"
+                          : "border-gray-300 hover:border-gray-400 text-gray-900"
                       }`}
                     >
                       {slot.displayTime}
@@ -437,8 +437,8 @@ export default function AppointmentBooking({
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No available slots for this date</p>
-                  <p className="text-sm">Please select another date</p>
+                  <p className="text-gray-600">No available slots for this date</p>
+                  <p className="text-sm text-gray-600">Please select another date</p>
                 </div>
               )}
             </div>
@@ -474,7 +474,7 @@ export default function AppointmentBooking({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Date:</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900">
                     {
                       availableDates.find((d) => d.value === selectedDate)
                         ?.fullDate
@@ -483,7 +483,7 @@ export default function AppointmentBooking({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Time:</span>
-                  <span className="font-medium">
+                  <span className="font-medium text-gray-900">
                     {new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString(
                       "en-US",
                       {
@@ -496,7 +496,7 @@ export default function AppointmentBooking({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium">30 minutes</span>
+                  <span className="font-medium text-gray-900">30 minutes</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
                   <span className="text-gray-600">Consultation Fee:</span>
