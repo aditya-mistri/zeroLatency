@@ -74,8 +74,8 @@ ZeroLatency-connect/
 ## Deployment
 
 ### Backend (Render)
-1. Connect your GitHub repo to Render
-2. Set environment variables
+1. Connection of GitHub repo to Render
+2. Setting of environment variables
 3. Deploy automatically on push
 
 ### Frontend (Vercel)
@@ -88,9 +88,9 @@ ZeroLatency-connect/
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
 - [x] **Phase 2**: Doctor verification & moderation ✅
 - [x] **Phase 3**: Appointment booking system ✅
-- [ ] **Phase 4**: Payment simulation ✅
-- [ ] **Phase 5**: Video calls & chat ✅
-- [ ] **Phase 6**: Transcription & records 
+- [x] **Phase 4**: Payment simulation ✅
+- [x] **Phase 5**: Video calls & chat ✅
+- [x] **Phase 6**: Transcription & records 
 - [ ] **Phase 7**: QA & final polish 
 
 ## User Roles
@@ -100,6 +100,7 @@ ZeroLatency-connect/
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
+
 
 
 
