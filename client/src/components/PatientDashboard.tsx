@@ -5,9 +5,10 @@ import { Doctor } from "@/lib/appointment-api";
 import DoctorDiscovery from "./patients/DoctorDiscovery";
 import AppointmentBooking from "./patients/AppointmentBooking";
 import AppointmentList from "./appointments/AppointmentList";
-import { CalendarCheck, User, Clock } from "lucide-react";
+import MedicalHistory from "./patients/MedicalHistory";
+import { CalendarCheck, User, Clock, FileText } from "lucide-react";
 
-type ViewState = "dashboard" | "findDoctors" | "booking" | "appointments";
+type ViewState = "dashboard" | "findDoctors" | "booking" | "appointments" | "medicalHistory";
 
 export default function PatientDashboard() {
   const [currentView, setCurrentView] = useState<ViewState>("dashboard");
@@ -65,6 +66,24 @@ export default function PatientDashboard() {
     );
   }
 
+  if (currentView === "medicalHistory") {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Medical History</h2>
+          <button
+            onClick={handleBackToDashboard}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+
+        <MedicalHistory />
+      </div>
+    );
+  }
+
   // Main dashboard view
   return (
     <div className="space-y-6">
@@ -105,15 +124,19 @@ export default function PatientDashboard() {
           </p>
         </button>
 
-        <div className="bg-white p-6 rounded-lg shadow opacity-75">
+        <button
+          onClick={() => setCurrentView("medicalHistory")}
+          className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow text-left group"
+        >
           <div className="flex items-center justify-between mb-4">
-            <Clock className="h-8 w-8 text-gray-400" />
+            <FileText className="h-8 w-8 text-purple-600" />
+            <div className="text-xs text-gray-500">Records</div>
           </div>
-          <h3 className="font-semibold text-gray-500 mb-2">Medical History</h3>
-          <p className="text-sm text-gray-400">
+          <h3 className="font-semibold text-gray-900 mb-2">Medical History</h3>
+          <p className="text-sm text-gray-600">
             Access your consultation records and prescriptions
           </p>
-        </div>
+        </button>
 
         <div className="bg-white p-6 rounded-lg shadow opacity-75">
           <div className="flex items-center justify-between mb-4">

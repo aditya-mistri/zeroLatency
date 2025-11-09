@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { appointmentApi } from "@/lib/appointment-api";
 import { useSocket } from "@/lib/socket-context";
 import { useAuth } from "@/lib/auth-context";
-import { X, Send, Link } from "lucide-react";
+import { X, Send, Link, Paperclip, File, Image as ImageIcon, Download } from "lucide-react";
 import config from "@/lib/config";
 import dynamic from "next/dynamic";
 
@@ -12,6 +12,12 @@ interface Message {
   id: string;
   message: string;
   messageType: string;
+  fileUrl?: string;
+  metadata?: {
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  };
   sentAt: string;
   senderId: string;
   sender: {
@@ -30,7 +36,7 @@ interface ChatRoomProps {
 
 export default function ChatRoom({
   appointmentId,
-  userRole, // reserved for future role-based UI logic
+  userRole,
   onClose,
 }: ChatRoomProps) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,7 +44,9 @@ export default function ChatRoom({
   const [meetingLink, setMeetingLink] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const {
     socket,
@@ -48,8 +56,6 @@ export default function ChatRoom({
     updateMeetingLink,
   } = useSocket();
   const { user } = useAuth();
-
-  // Fetch initial data
   const fetchInitialData = async () => {
     try {
       type LinkRes = { status: string; data?: { meetingLink?: string } };
@@ -68,8 +74,6 @@ export default function ChatRoom({
     if (socket) {
       // Join appointment room
       joinAppointment(appointmentId);
-
-      // Fetch initial data
       fetchInitialData();
 
       // Socket event listeners
@@ -122,6 +126,68 @@ export default function ChatRoom({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File size must be less than 10MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // Create form data
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("appointmentId", appointmentId);
+
+      // Upload file to server
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/chat/upload`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.data) {
+        // Send file message via socket with fileUrl
+        const metadata = {
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+        };
+
+        // Emit message with fileUrl included
+        if (socket) {
+          socket.emit("send-message", {
+            appointmentId,
+            message: file.name,
+            messageType: file.type.startsWith("image/") ? "image" : "file",
+            fileUrl: data.data.fileUrl,
+            metadata,
+          });
+        }
+      } else {
+        alert(data.message || "Failed to upload file");
+      }
+    } catch (error) {
+      console.error("File upload error:", error);
+      alert("Failed to upload file");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !socket) return;
@@ -193,6 +259,8 @@ export default function ChatRoom({
         <div className="flex-1 overflow-auto p-4 space-y-3">
           {messages.map((m) => {
             const isMyMessage = user && m.senderId === user.id;
+            const isFileMessage = m.messageType === "file" || m.messageType === "image";
+
             return (
               <div
                 key={m.id}
@@ -204,7 +272,56 @@ export default function ChatRoom({
                   <div className="text-xs font-medium mb-1">
                     {m.sender.firstName} {m.sender.lastName}
                   </div>
-                  <div className="whitespace-pre-wrap">{m.message}</div>
+
+                  {/* File/Image Message */}
+                  {isFileMessage && m.fileUrl ? (
+                    <div className="space-y-2">
+                      {m.messageType === "image" ? (
+                        <a
+                          href={m.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img
+                            src={m.fileUrl}
+                            alt={m.metadata?.fileName || "Image"}
+                            className="max-w-full h-auto rounded border border-white/20"
+                            style={{ maxHeight: "200px" }}
+                          />
+                        </a>
+                      ) : (
+                        <a
+                          href={m.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 p-2 rounded border ${
+                            isMyMessage
+                              ? "border-white/20 hover:bg-white/10"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          <File className="h-5 w-5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {m.metadata?.fileName || m.message}
+                            </div>
+                            {m.metadata?.fileSize && (
+                              <div className="text-xs opacity-75">
+                                {(m.metadata.fileSize / 1024).toFixed(1)} KB
+                              </div>
+                            )}
+                          </div>
+                          <Download className="h-4 w-4" />
+                        </a>
+                      )}
+                      <div className="text-sm">{m.message}</div>
+                    </div>
+                  ) : (
+                    /* Text Message */
+                    <div className="whitespace-pre-wrap">{m.message}</div>
+                  )}
+
                   <div className="text-xs text-gray-400 mt-1">
                     {new Date(m.sentAt).toLocaleTimeString()}
                   </div>
@@ -224,19 +341,39 @@ export default function ChatRoom({
 
         <div className="p-4 border-t">
           <div className="flex gap-2">
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,.pdf,.doc,.docx"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+
+            {/* File upload button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              title="Upload file or image"
+            >
+              <Paperclip className="h-5 w-5 text-gray-600" />
+            </button>
+
             <input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter") handleSendMessage();
+                if (e.key === "Enter" && !uploading) handleSendMessage();
               }}
-              placeholder="Type a message..."
-              className="flex-1 px-3 py-2 border rounded-lg"
+              placeholder={uploading ? "Uploading file..." : "Type a message or upload a file..."}
+              disabled={uploading}
+              className="flex-1 px-3 py-2 border rounded-lg disabled:opacity-50"
             />
             <button
               onClick={handleSendMessage}
-              disabled={loading}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2"
+              disabled={loading || uploading}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               Send

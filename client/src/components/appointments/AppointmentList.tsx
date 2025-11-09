@@ -43,7 +43,10 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
       const params: {
         status?: string;
         upcoming?: boolean;
-      } = {};
+        limit?: number;
+      } = {
+        limit: 100  // Fetch up to 100 appointments to avoid pagination issues
+      };
       if (filter.status !== "ALL") {
         params.status = filter.status;
       }

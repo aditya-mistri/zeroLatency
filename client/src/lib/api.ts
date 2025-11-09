@@ -64,13 +64,9 @@ export const authApi = {
       body: JSON.stringify(credentials),
     });
   },
-
-  // Get current user profile
   getProfile: async (): Promise<AuthResponse> => {
     return apiRequest<AuthResponse>("/auth/profile");
   },
-
-  // Update user profile
   updateProfile: async (
     userData: Partial<RegisterData>
   ): Promise<AuthResponse> => {

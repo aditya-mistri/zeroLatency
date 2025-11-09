@@ -53,7 +53,6 @@ export function utcToISTDisplay(utcDate: Date | string): string {
  * @param istTime Time string in HH:MM format (24-hour)
  */
 export function istToUTC(istDate: string, istTime: string): string {
-  // Parse the IST date and time components
   const [year, month, day] = istDate.split('-').map(Number);
   const [hour, minute] = istTime.split(':').map(Number);
   
@@ -125,7 +124,6 @@ export function formatISTDate(dateString: string): {
   long: string;
   dayOfWeek: string;
 } {
-  // Parse the date string and create a date object
   const [year, month, day] = dateString.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   

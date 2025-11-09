@@ -117,7 +117,6 @@ async function apiRequest<T>(
 }
 
 export const appointmentApi = {
-  // Get approved doctors
   getDoctors: async (params?: {
     page?: number;
     limit?: number;
@@ -139,22 +138,16 @@ export const appointmentApi = {
     }
     return apiRequest(`/doctors?${searchParams}`);
   },
-
-  // Get doctor by ID
   getDoctorById: async (
     doctorId: string
   ): Promise<ApiResponse<{ doctor: Doctor }>> => {
     return apiRequest(`/doctors/${doctorId}`);
   },
-
-  // Get specializations
   getSpecializations: async (): Promise<
     ApiResponse<{ specializations: string[] }>
   > => {
     return apiRequest("/doctors/meta/specializations");
   },
-
-  // Get doctor availability
   getDoctorAvailability: async (
     doctorId: string,
     date: string
@@ -212,8 +205,6 @@ export const appointmentApi = {
       body: JSON.stringify(data),
     });
   },
-
-  // Get appointments for current user
   getAppointments: async (params?: {
     status?: string;
     page?: number;
@@ -230,15 +221,11 @@ export const appointmentApi = {
     }
     return apiRequest(`/appointments?${searchParams}`);
   },
-
-  // Get appointment by ID
   getAppointmentById: async (
     appointmentId: string
   ): Promise<ApiResponse<{ appointment: Appointment }>> => {
     return apiRequest(`/appointments/${appointmentId}`);
   },
-
-  // Update appointment status
   updateAppointmentStatus: async (
     appointmentId: string,
     status: string,
@@ -274,9 +261,33 @@ export const appointmentApi = {
       body: JSON.stringify(paymentData),
     });
   },
-
-  // Get payment details
   getPaymentDetails: async (appointmentId: string) => {
     return apiRequest(`/appointments/${appointmentId}/payment`);
+  },
+  canJoinAppointment: async (
+    appointmentId: string
+  ): Promise<
+    ApiResponse<{
+      canJoin: boolean;
+      reason?: string;
+      timeUntilStart?: number;
+      timeUntilEnd?: number;
+    }>
+  > => {
+    return apiRequest(`/appointments/${appointmentId}/can-join`);
+  },
+
+  // Start appointment (mark as IN_PROGRESS)
+  startAppointment: async (appointmentId: string) => {
+    return apiRequest(`/appointments/${appointmentId}/start`, {
+      method: "POST",
+    });
+  },
+
+  // End appointment (mark as COMPLETED)
+  endAppointment: async (appointmentId: string) => {
+    return apiRequest(`/appointments/${appointmentId}/end`, {
+      method: "POST",
+    });
   },
 };

@@ -45,8 +45,6 @@ export default function AppointmentBooking({
   };
 
   const [availableDates, setAvailableDates] = useState<AvailableDateType[]>([]);
-
-  // Fetch doctor's available dates on component mount
   useEffect(() => {
     fetchAvailableDates();
   }, [doctor.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -55,8 +53,6 @@ export default function AppointmentBooking({
     try {
       setLoadingDates(true);
       setError(null);
-
-      // Get availability for next 7 days (including today) in IST
       const todayIST = getCurrentISTDate();
       const startDateStr = todayIST;
 
@@ -135,8 +131,6 @@ export default function AppointmentBooking({
       setLoadingDates(false);
     }
   };
-
-  // Fetch available slots when date is selected
   useEffect(() => {
     if (selectedDate) {
       fetchAvailableSlots();
@@ -179,8 +173,6 @@ export default function AppointmentBooking({
     try {
       setLoading(true);
       setError(null);
-
-      // Convert IST date and time to UTC ISO string
       const scheduledAtUTC = istToUTC(selectedDate, selectedTime);
 
       const response = await appointmentApi.createAppointment({

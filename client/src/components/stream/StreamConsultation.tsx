@@ -100,8 +100,6 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
           chat: chatInfo,
           call: callInfo,
         } = json.data;
-
-        // Initialize Stream Chat
         const chatClientInstance = StreamChat.getInstance(apiKey);
 
         // Only disconnect if a different user is connected
@@ -157,8 +155,6 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
           id: user.id,
           name: user.name || "User",
         });
-
-        // Initialize Stream Video
         const videoClientInstance = new StreamVideoClient({
           apiKey,
           user: {

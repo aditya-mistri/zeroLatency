@@ -29,8 +29,6 @@ const AvailabilityManager: React.FC = () => {
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [clearing, setClearing] = useState<Record<string, boolean>>({});
   const [next7Days, setNext7Days] = useState<DaySchedule[]>([]);
-
-  // Generate next 7 days starting from today in IST
   const getNext7Days = () => {
     const days = [];
     const todayIST = getCurrentISTDate(); // Get today's date in IST
@@ -55,20 +53,14 @@ const AvailabilityManager: React.FC = () => {
     }
     return days;
   };
-
-  // Initialize on mount
   useEffect(() => {
     const days = getNext7Days();
     setNext7Days(days);
-
-    // Initialize schedules with default values
     const initialSchedules: Record<string, DaySchedule> = {};
     days.forEach((day) => {
       initialSchedules[day.date] = day;
     });
     setSchedules(initialSchedules);
-
-    // Fetch saved availabilities
     fetchDoctorAvailabilities();
   }, []); // Run once on mount
 
@@ -90,12 +82,9 @@ const AvailabilityManager: React.FC = () => {
         const availabilities = data.data?.availabilities || [];
 
         console.log("Fetched availabilities:", availabilities); // Debug log
-
-        // Update schedules with fetched data
         setSchedules((prev) => {
           const updated = { ...prev };
           availabilities.forEach((av: AvailabilityResponse) => {
-            // Check if date exists in our schedule
             if (updated[av.date] && av.slots && av.slots.length > 0) {
               const slot = av.slots[0]; // Take first slot
               console.log("Processing slot:", slot); // Debug log

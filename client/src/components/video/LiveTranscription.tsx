@@ -138,8 +138,6 @@ export const LiveTranscription: React.FC<LiveTranscriptionProps> = ({
       setIsSupported(false);
     }
   }, []);
-
-  // Initialize speech recognition
   useEffect(() => {
     if (!isSupported) return;
 
@@ -200,7 +198,6 @@ export const LiveTranscription: React.FC<LiveTranscriptionProps> = ({
     };
 
     recognition.onend = () => {
-      // Check if we should be listening using the ref
       if (isListeningRef.current) {
         try {
           setTimeout(() => {
