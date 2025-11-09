@@ -54,8 +54,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       ));
       return;
     }
-
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email }
     });
@@ -108,8 +106,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         },
       });
     }
-
-    // Generate token
     const token = generateToken({
       id: user.id,
       email: user.email,
@@ -158,8 +154,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json(formatResponse('error', 'Invalid email or password'));
       return;
     }
-
-    // Check if user is active
     if (!user.isActive) {
       res.status(401).json(formatResponse('error', 'Account is deactivated'));
       return;
@@ -172,8 +166,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       res.status(401).json(formatResponse('error', 'Invalid email or password'));
       return;
     }
-
-    // Generate token
     const token = generateToken({
       id: user.id,
       email: user.email,
@@ -194,8 +186,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json(formatResponse('error', 'Internal server error'));
   }
 };
-
-// Get current user profile
 export const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {
@@ -229,8 +219,6 @@ export const getProfile = async (req: Request, res: Response): Promise<void> => 
     res.status(500).json(formatResponse('error', 'Internal server error'));
   }
 };
-
-// Update user profile
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     if (!req.user) {

@@ -3,8 +3,6 @@ import { PrismaClient, DoctorStatus } from "@prisma/client";
 import { formatResponse } from "../utils/helpers";
 
 const prisma = new PrismaClient();
-
-// Get moderator dashboard statistics
 export const getDashboardStats = async (
   req: Request,
   res: Response
@@ -93,8 +91,6 @@ export const getDashboardStats = async (
       .json(formatResponse("error", "Failed to fetch dashboard statistics"));
   }
 };
-
-// Get all doctors with filtering and pagination
 export const getDoctors = async (
   req: Request,
   res: Response
@@ -197,8 +193,6 @@ export const getDoctors = async (
     res.status(500).json(formatResponse("error", "Failed to fetch doctors"));
   }
 };
-
-// Get single doctor details
 export const getDoctorById = async (
   req: Request,
   res: Response
@@ -256,8 +250,6 @@ export const approveDoctor = async (
   try {
     const { doctorId } = req.params;
     const { hospitalId, notes } = req.body;
-
-    // Check if doctor exists and is pending
     const doctor = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: { user: true },
@@ -291,8 +283,6 @@ export const approveDoctor = async (
         return;
       }
     }
-
-    // Update doctor status
     const updatedDoctor = await prisma.doctorProfile.update({
       where: { id: doctorId },
       data: {
@@ -342,8 +332,6 @@ export const rejectDoctor = async (
         .json(formatResponse("error", "Rejection reason is required"));
       return;
     }
-
-    // Check if doctor exists and is pending
     const doctor = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: { user: true },
@@ -365,8 +353,6 @@ export const rejectDoctor = async (
         );
       return;
     }
-
-    // Update doctor status
     const updatedDoctor = await prisma.doctorProfile.update({
       where: { id: doctorId },
       data: {
@@ -400,8 +386,6 @@ export const rejectDoctor = async (
     res.status(500).json(formatResponse("error", "Failed to reject doctor"));
   }
 };
-
-// Update doctor profile (moderator can edit)
 export const updateDoctorProfile = async (
   req: Request,
   res: Response
@@ -416,8 +400,6 @@ export const updateDoctorProfile = async (
       bio,
       hospitalId,
     } = req.body;
-
-    // Check if doctor exists
     const doctor = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
     });
@@ -438,8 +420,6 @@ export const updateDoctorProfile = async (
         return;
       }
     }
-
-    // Update doctor profile
     const updateData: any = {};
     if (specialization) updateData.specialization = specialization;
     if (experience !== undefined) updateData.experience = parseInt(experience);

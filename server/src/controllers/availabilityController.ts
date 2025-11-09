@@ -53,8 +53,6 @@ export const setDoctorAvailability = async (
         );
       return;
     }
-
-    // Get doctor profile
     const doctorProfile = await prisma.doctorProfile.findUnique({
       where: { userId: req.user.id },
     });
@@ -77,8 +75,6 @@ export const setDoctorAvailability = async (
         );
       return;
     }
-
-    // Validate time format
     const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
       res
@@ -86,8 +82,6 @@ export const setDoctorAvailability = async (
         .json(formatResponse("error", "Invalid time format. Use HH:MM"));
       return;
     }
-
-    // Validate start < end time
     const [startHour, startMin] = startTime.split(":").map(Number);
     const [endHour, endMin] = endTime.split(":").map(Number);
     if (startHour * 60 + startMin >= endHour * 60 + endMin) {
@@ -131,8 +125,6 @@ export const setDoctorAvailability = async (
     res.status(500).json(formatResponse("error", "Failed to set availability"));
   }
 };
-
-// Get doctor availability - SIMPLE VERSION
 export const getDoctorAvailability = async (
   req: Request,
   res: Response
@@ -158,8 +150,6 @@ export const getDoctorAvailability = async (
     const end = endDate
       ? new Date((endDate as string) + "T00:00:00Z")
       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    // Get availability records
     const availabilityRecords = await prisma.doctorAvailability.findMany({
       where: {
         doctorProfileId: doctorProfile.id,
@@ -173,8 +163,6 @@ export const getDoctorAvailability = async (
 
     for (const record of availabilityRecords) {
       const dateStr = record.date.toISOString().split("T")[0];
-
-      // Get booked appointments
       const appointments = await prisma.appointment.findMany({
         where: {
           doctorId: doctorProfile.user.id,
@@ -187,8 +175,6 @@ export const getDoctorAvailability = async (
           },
         },
       });
-
-      // Generate all possible slots
       const allSlots = generateTimeSlots(
         record.startTime,
         record.endTime,
@@ -204,17 +190,11 @@ export const getDoctorAvailability = async (
         // Create a Date object for the date in UTC but we'll use it for time comparison only
         const slotDateTime = new Date(dateStr + "T" + timeSlot + ":00.000Z");
         const now = new Date();
-
-        // Check if slot is in past
         const isInPast = slotDateTime < now;
-
-        // Check if slot is booked
         const isBooked = appointments.some((apt) => {
           const aptTime = new Date(apt.scheduledAt);
           return Math.abs(aptTime.getTime() - slotDateTime.getTime()) < 60000; // Within 1 minute
         });
-
-        // Format time for display - use the time string directly, not converted
         const hour12 = hours % 12 || 12;
         const period = hours >= 12 ? "PM" : "AM";
         const displayTime = `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
@@ -248,8 +228,6 @@ export const getDoctorAvailability = async (
     res.status(500).json(formatResponse("error", "Failed to get availability"));
   }
 };
-
-// Get doctor's own availability (for management)
 export const getMyAvailability = async (
   req: Request,
   res: Response
@@ -397,8 +375,6 @@ export const clearDayAvailability = async (
     }
 
     console.log("🗑️ Clear availability - Doctor profile ID:", doctorProfile.id);
-
-    // Parse date to UTC midnight
     const targetDate = new Date(date + "T00:00:00Z");
     const nextDay = new Date(targetDate);
     nextDay.setDate(nextDay.getDate() + 1);

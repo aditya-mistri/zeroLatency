@@ -47,8 +47,6 @@ export const getStreamToken = async (req: Request, res: Response) => {
         .status(400)
         .json({ status: "error", message: "appointmentId is required" });
     }
-
-    // Fetch the appointment and verify access
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
       select: {

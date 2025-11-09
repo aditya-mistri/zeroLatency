@@ -15,6 +15,8 @@ import appointmentRoutes from "./routes/appointments";
 import availabilityRoutes from "./routes/availability";
 import moderatorRoutes from "./routes/moderator";
 import videoRoutes from "./routes/video";
+import prescriptionRoutes from "./routes/prescriptions";
+import chatRoutes from "./routes/chat";
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +64,8 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/moderator", moderatorRoutes);
 app.use("/api/video", videoRoutes);
+app.use("/api", prescriptionRoutes);
+app.use("/api/chat", chatRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -89,6 +93,11 @@ const io = setupSocketIO(server);
 // Inject Socket.IO into controllers that need it
 import { setSocketIO } from "./controllers/appointmentController";
 setSocketIO(io);
+
+// Start appointment scheduler for auto-status updates
+import { startAppointmentScheduler } from "./utils/appointmentScheduler";
+startAppointmentScheduler();
+console.log("✓ Appointment scheduler started (runs every minute)");
 
 // Start server
 server.listen(PORT, () => {

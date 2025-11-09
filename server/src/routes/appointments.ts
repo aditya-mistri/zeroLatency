@@ -13,20 +13,15 @@ import {
   getMeetingLink,
   postChatMessage,
   getChatMessages,
+  checkCanJoinAppointment,
+  startAppointmentConsultation,
+  endAppointmentConsultation,
 } from "../controllers/appointmentController";
 
 const router = Router();
-
-// Get all appointments for current user
 router.get("/", authenticateToken, getAppointments);
-
-// Create new appointment (patients only)
 router.post("/", authenticateToken, createAppointment);
-
-// Get specific appointment by ID
 router.get("/:appointmentId", authenticateToken, getAppointmentById);
-
-// Update appointment status
 router.put(
   "/:appointmentId/status",
   authenticateToken,
@@ -35,8 +30,6 @@ router.put(
 
 // Cancel appointment
 router.put("/:appointmentId/cancel", authenticateToken, cancelAppointment);
-
-// Get doctor availability (public route for booking)
 router.get("/availability/:doctorId", getDoctorAvailability);
 
 // Payment routes
@@ -48,5 +41,10 @@ router.post("/:appointmentId/meeting", authenticateToken, setMeetingLink);
 router.get("/:appointmentId/meeting", authenticateToken, getMeetingLink);
 router.get("/:appointmentId/messages", authenticateToken, getChatMessages);
 router.post("/:appointmentId/messages", authenticateToken, postChatMessage);
+
+// Appointment lifecycle routes
+router.get("/:appointmentId/can-join", authenticateToken, checkCanJoinAppointment);
+router.post("/:appointmentId/start", authenticateToken, startAppointmentConsultation);
+router.post("/:appointmentId/end", authenticateToken, endAppointmentConsultation);
 
 export default router;
