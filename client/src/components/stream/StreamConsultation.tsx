@@ -18,7 +18,6 @@ import {
   MessageInput,
   Thread,
   ChannelHeader,
-  Message as DefaultMessageComponent,
 } from "stream-chat-react";
 import config from "@/lib/config";
 import { LiveTranscription } from "@/components/video/LiveTranscription";
@@ -52,6 +51,9 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const [call, setCall] = useState<StreamCallType | null>(null);
   const [channel, setChannel] = useState<ReturnType<
+    StreamChat["channel"]
+  > | null>(null);
+  const [transcriptChannel, setTranscriptChannel] = useState<ReturnType<
     StreamChat["channel"]
   > | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -135,8 +137,20 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         );
         await channelInstance.watch();
 
+        // Create a separate channel for transcriptions only
+        const transcriptChannelInstance = chatClientInstance.channel(
+          chatInfo.channelType,
+          `${chatInfo.channelId}-transcripts`,
+          {
+            name: `Transcripts`,
+            members: chatInfo.members,
+          }
+        );
+        await transcriptChannelInstance.watch();
+
         setChatClient(chatClientInstance);
         setChannel(channelInstance);
+        setTranscriptChannel(transcriptChannelInstance);
 
         // Store current user info for transcription
         setCurrentUser({
@@ -218,7 +232,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
       </div>
     );
 
-  if (!chatClient || !channel || !videoClient || !call) return null;
+  if (!chatClient || !channel || !transcriptChannel || !videoClient || !call) return null;
 
   return (
     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
@@ -265,34 +279,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
             >
               <Window>
                 <ChannelHeader />
-                <MessageList
-                  messageRenderer={(messageProps) => {
-                    const msg: any = messageProps.message;
-                    
-                    // Debug: log the FULL message object to see all fields
-                    if (msg) {
-                      console.log('[ChatDebug] FULL MESSAGE OBJECT:', JSON.stringify(msg, null, 2));
-                      console.log('[ChatDebug] Message keys:', Object.keys(msg));
-                    }
-                    
-                    // Normalize custom type fields (some SDKs use custom_type)
-                    const customType = msg?.customType || msg?.custom_type || msg?.type;
-
-                    // Debugging: log message id and customType when transcriptions still appear
-                    // Also hide transcription messages originating from the current user (safety)
-                    if (customType === "transcription" || (msg?.user?.id && currentUser?.id && msg.user.id === currentUser.id && customType)) {
-                      console.log('[ChatDebug] FILTERING OUT transcription:', { id: msg?.id, text: msg?.text, customType, user: msg?.user });
-                      return null;
-                    }
-
-                    // If no message present (system UI), let Stream render it
-                    if (!msg) return undefined;
-
-                    // Debug: log other messages that will be rendered
-                    console.log('[ChatDebug] RENDERING message:', { id: msg?.id, text: msg?.text, customType, user: msg?.user });
-                    return undefined; // Use default renderer for normal messages
-                  }}
-                />
+                <MessageList />
                 <MessageInput />
               </Window>
               <Thread />
@@ -323,7 +310,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         )}
 
         {/* Live Transcription Section */}
-        {showTranscript && currentUser && channel && (
+        {showTranscript && currentUser && transcriptChannel && (
           <div
             className={`${
               showVideo ? "w-1/4" : "flex-1"
@@ -333,7 +320,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
               userId={currentUser.id}
               userName={currentUser.name}
               language="en-US"
-              channel={channel}
+              channel={transcriptChannel}
             />
           </div>
         )}

@@ -59,8 +59,8 @@ export const LiveTranscription: React.FC<LiveTranscriptionProps> = ({
 
     const doSend = async () => {
       try {
-        // Prepare payload including both camelCase and snake_case to be robust across SDK versions
-        const payload: any = { text, customType: "transcription", custom_type: "transcription" };
+        // Send transcription WITHOUT any customType markers - this is a separate channel
+        const payload = { text };
         // use ch.sendMessage if available
         if (typeof ch.sendMessage === "function") {
           await ch.sendMessage(payload);
@@ -102,10 +102,8 @@ export const LiveTranscription: React.FC<LiveTranscriptionProps> = ({
     const handleNewMessage = (event: any) => {
       const message = event.message;
       
-      // Only process transcription messages from OTHER users
-      // Check both type and customType fields
-      const incomingCustomType = message?.customType || message?.custom_type || message?.type;
-      if (incomingCustomType === "transcription" && message?.user?.id !== userId) {
+      // Process ALL messages from OTHER users in this transcript-only channel
+      if (message?.user?.id !== userId) {
         const newEntry: TranscriptEntry = {
           id: message.id,
           speaker: message.user?.name || "Other User",

@@ -3,8 +3,9 @@
 > A full-stack telehealth web platform that enables patients to connect with verified doctors for remote consultations.
 
 ## Live Demo
-- **Frontend**: [https://zero-latency-rouge.vercel.app](https://zero-latency-rouge.vercel.app)
-- **Backend API**: [https://zerolatency-xf57.onrender.com/api](https://zerolatency-xf57.onrender.com/api)
+- **Frontend**: [Vercel](https://zero-latency-rouge.vercel.app)
+- **Backend API**: [Render](https://zerolatency-xf57.onrender.com/api)
+- **Figma Design**: [Figma](https://www.figma.com/make/7nDMWYVGWQZU9bBOzCSBwy/Telehealth-Application-Design)
 - **Always live - with the help of Cron-Jobs** 
 
 ## Project Overview
@@ -75,8 +76,8 @@ ZeroLatency-connect/
 ## Deployment
 
 ### Backend (Render)
-1. Connect your GitHub repo to Render
-2. Set environment variables
+1. Connection of GitHub repo to Render
+2. Setting of environment variables
 3. Deploy automatically on push
 
 ### Frontend (Vercel)
@@ -84,11 +85,7 @@ ZeroLatency-connect/
 2. Configure build settings
 3. Deploy with automatic previews
 
-## Development Phases
 
-- [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
-- [x] **Phase 2**: Doctor verification & moderation ✅
-- [x] **Phase 3**: Appointment booking system ✅
 ## Development Phases
 
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
@@ -99,6 +96,7 @@ ZeroLatency-connect/
 - [x] **Phase 6**: Live transcription (English & Hindi) ✅
 - [ ] **Phase 7**: Medical records & history
 - [ ] **Phase 8**: QA & final polish
+
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
@@ -119,6 +117,8 @@ Real-time speech-to-text during video consultations to overcome language and dia
 🇺🇸 English (US/UK/India) | 🇪🇸 Spanish | 🇫🇷 French | 🇩🇪 German | 🇮🇹 Italian | 🇧🇷 Portuguese | 🇮🇳 Hindi | 🇨🇳 Chinese | 🇯🇵 Japanese | 🇰🇷 Korean | 🇸🇦 Arabic
 
 📖 [Full Documentation](./docs/live-transcription.md) | [Quick Start Guide](./docs/transcription-quick-start.md)
+
+
 
 
 
