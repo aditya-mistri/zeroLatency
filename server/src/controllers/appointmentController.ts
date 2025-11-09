@@ -10,8 +10,6 @@ export const setSocketIO = (io: any) => {
 };
 
 const prisma = new PrismaClient();
-
-// Create a new appointment
 export const createAppointment = async (
   req: Request,
   res: Response
@@ -33,8 +31,6 @@ export const createAppointment = async (
         );
       return;
     }
-
-    // Validate appointment time is not in the past
     const appointmentTime = new Date(scheduledAt);
     const now = new Date();
 
@@ -71,8 +67,6 @@ export const createAppointment = async (
         .json(formatResponse("error", "Only patients can book appointments"));
       return;
     }
-
-    // Check if doctor exists and is approved
     const doctorProfile = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: {
@@ -189,8 +183,6 @@ export const createAppointment = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get appointments for current user
 export const getAppointments = async (
   req: Request,
   res: Response
@@ -307,8 +299,6 @@ export const getAppointments = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get appointment by ID
 export const getAppointmentById = async (
   req: Request,
   res: Response
@@ -366,8 +356,6 @@ export const getAppointmentById = async (
       res.status(404).json(formatResponse("error", "Appointment not found"));
       return;
     }
-
-    // Check if user has access to this appointment
     if (
       appointment.patientId !== req.user.id &&
       appointment.doctorId !== req.user.id
@@ -386,8 +374,6 @@ export const getAppointmentById = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Update appointment status
 export const updateAppointmentStatus = async (
   req: Request,
   res: Response
@@ -405,8 +391,6 @@ export const updateAppointmentStatus = async (
       res.status(400).json(formatResponse("error", "Status is required"));
       return;
     }
-
-    // Validate status
     if (!Object.values(AppointmentStatus).includes(status)) {
       res
         .status(400)
@@ -517,8 +501,6 @@ export const cancelAppointment = async (
       res.status(404).json(formatResponse("error", "Appointment not found"));
       return;
     }
-
-    // Check if user has permission to cancel
     if (
       appointment.patientId !== req.user.id &&
       appointment.doctorId !== req.user.id
@@ -526,8 +508,6 @@ export const cancelAppointment = async (
       res.status(403).json(formatResponse("error", "Access denied"));
       return;
     }
-
-    // Check if appointment can be cancelled
     if (appointment.status === AppointmentStatus.COMPLETED) {
       res
         .status(400)
@@ -593,8 +573,6 @@ export const cancelAppointment = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get available time slots for a doctor
 export const getDoctorAvailability = async (
   req: Request,
   res: Response
@@ -607,8 +585,6 @@ export const getDoctorAvailability = async (
       res.status(400).json(formatResponse("error", "Date is required"));
       return;
     }
-
-    // Check if doctor exists and is approved
     const doctorProfile = await prisma.doctorProfile.findUnique({
       where: { id: doctorId },
       include: {
@@ -625,16 +601,12 @@ export const getDoctorAvailability = async (
       res.status(400).json(formatResponse("error", "Doctor is not approved"));
       return;
     }
-
-    // Parse date consistently - always use UTC midnight
     const selectedDate = new Date((date as string) + "T00:00:00Z");
 
     // Debug logging
     console.log("getDoctorAvailability - Input date:", date);
     console.log("getDoctorAvailability - Parsed date:", selectedDate);
     console.log("getDoctorAvailability - Doctor ID:", doctorId);
-
-    // Check if doctor has set availability for this date
     const availability = await prisma.doctorAvailability.findUnique({
       where: {
         doctorProfileId_date: {
@@ -658,8 +630,6 @@ export const getDoctorAvailability = async (
       );
       return;
     }
-
-    // Get existing appointments for the day
     const existingAppointments = await prisma.appointment.findMany({
       where: {
         doctorId: doctorProfile.user.id,
@@ -682,8 +652,6 @@ export const getDoctorAvailability = async (
         duration: true,
       },
     });
-
-    // Generate time slots based on doctor's availability
     console.log("getDoctorAvailability - Availability details:", {
       startTime: availability.startTime,
       endTime: availability.endTime,
@@ -720,8 +688,6 @@ export const getDoctorAvailability = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Helper function to generate available slots
 function generateAvailableSlots(
   startTime: string,
   endTime: string,
@@ -741,36 +707,36 @@ function generateAvailableSlots(
     const minutes = currentMinutes % 60;
 
     // Create full datetime for this slot in UTC
+    // The hours/minutes are in IST, so we need to convert to UTC by subtracting 5:30
     const slotDateTime = new Date(date);
     slotDateTime.setUTCHours(hours, minutes, 0, 0);
-
-    // Check if slot is in the past
+    
+    // Convert from IST to UTC (subtract 5 hours 30 minutes)
+    const slotDateTimeUTC = new Date(slotDateTime.getTime() - (330 * 60 * 1000));
+    
     const now = new Date();
-    const isInPast = slotDateTime < now; // Allow current time, block past times
-
-    // Check if slot conflicts with existing appointments
+    const isInPast = slotDateTimeUTC < now; // Allow current time, block past times
     const hasConflict = existingAppointments.some((appointment) => {
       const appointmentTime = new Date(appointment.scheduledAt);
       const appointmentEnd = new Date(
         appointmentTime.getTime() + (appointment.duration || 30) * 60000
       );
-      const slotEnd = new Date(slotDateTime.getTime() + slotDuration * 60000);
+      const slotEnd = new Date(slotDateTimeUTC.getTime() + slotDuration * 60000);
 
       return (
-        (slotDateTime >= appointmentTime && slotDateTime < appointmentEnd) ||
+        (slotDateTimeUTC >= appointmentTime && slotDateTimeUTC < appointmentEnd) ||
         (slotEnd > appointmentTime && slotEnd <= appointmentEnd) ||
-        (slotDateTime <= appointmentTime && slotEnd >= appointmentEnd)
+        (slotDateTimeUTC <= appointmentTime && slotEnd >= appointmentEnd)
       );
     });
 
     if (!isInPast && !hasConflict) {
-      // Format time for display - use the time values directly, not converted
       const hour12 = hours % 12 || 12;
       const period = hours >= 12 ? "PM" : "AM";
       const displayTime = `${hour12}:${minutes.toString().padStart(2, "0")} ${period}`;
 
       slots.push({
-        time: slotDateTime.toISOString(),
+        time: slotDateTimeUTC.toISOString(),
         displayTime: displayTime, // Shows correct local time
       });
     }
@@ -839,8 +805,6 @@ export const processPayment = async (
       res.status(404).json(formatResponse("error", "Appointment not found"));
       return;
     }
-
-    // Check if user is the patient who booked the appointment
     if (appointment.patientId !== req.user.id) {
       res
         .status(403)
@@ -849,8 +813,6 @@ export const processPayment = async (
         );
       return;
     }
-
-    // Check if appointment is in correct status for payment
     if (appointment.status !== AppointmentStatus.PAYMENT_PENDING) {
       res
         .status(400)
@@ -865,7 +827,6 @@ export const processPayment = async (
     );
 
     if (mockPaymentResult.success) {
-      // Update appointment status to SCHEDULED and payment to COMPLETED
       const updatedAppointment = await prisma.appointment.update({
         where: { id: appointmentId },
         data: {
@@ -912,7 +873,6 @@ export const processPayment = async (
         })
       );
     } else {
-      // Update payment status to FAILED
       await prisma.appointment.update({
         where: { id: appointmentId },
         data: {
@@ -996,8 +956,6 @@ export const setMeetingLink = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get meeting link (doctor or patient)
 export const getMeetingLink = async (
   req: Request,
   res: Response
@@ -1045,6 +1003,210 @@ export const getMeetingLink = async (
     );
   } catch (error) {
     console.error("Get meeting link error:", error);
+    res.status(500).json(formatResponse("error", "Internal server error"));
+  }
+};
+export const checkCanJoinAppointment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json(formatResponse("error", "User not authenticated"));
+      return;
+    }
+
+    const { appointmentId } = req.params;
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      res.status(404).json(formatResponse("error", "Appointment not found"));
+      return;
+    }
+
+    // Import the helper function
+    const { canJoinAppointment } = await import("../utils/appointmentScheduler");
+    const result = await canJoinAppointment(appointment, req.user.id);
+
+    res.json(
+      formatResponse(
+        result.canJoin ? "success" : "error",
+        result.reason || "Can join appointment",
+        result
+      )
+    );
+  } catch (error) {
+    console.error("Check can join appointment error:", error);
+    res.status(500).json(formatResponse("error", "Internal server error"));
+  }
+};
+
+// Start appointment (mark as IN_PROGRESS)
+export const startAppointmentConsultation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json(formatResponse("error", "User not authenticated"));
+      return;
+    }
+
+    const { appointmentId } = req.params;
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        doctor: { select: { id: true, firstName: true, lastName: true } },
+        patient: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+
+    if (!appointment) {
+      res.status(404).json(formatResponse("error", "Appointment not found"));
+      return;
+    }
+    if (
+      appointment.patientId !== req.user.id &&
+      appointment.doctorId !== req.user.id
+    ) {
+      res.status(403).json(formatResponse("error", "Access denied"));
+      return;
+    }
+    if (appointment.status !== AppointmentStatus.CONFIRMED) {
+      res
+        .status(400)
+        .json(
+          formatResponse(
+            "error",
+            `Cannot start appointment with status ${appointment.status}`
+          )
+        );
+      return;
+    }
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: AppointmentStatus.IN_PROGRESS,
+        updatedAt: new Date(),
+      },
+      include: {
+        doctor: { select: { id: true, firstName: true, lastName: true } },
+        patient: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+
+    // Create session record if not exists
+    const existingRecord = await prisma.sessionRecord.findUnique({
+      where: { appointmentId },
+    });
+
+    if (!existingRecord) {
+      await prisma.sessionRecord.create({
+        data: {
+          appointmentId,
+          userId: req.user.id,
+          startedAt: new Date(),
+        },
+      });
+    }
+
+    res.json(
+      formatResponse("success", "Appointment started successfully", {
+        appointment: updatedAppointment,
+      })
+    );
+  } catch (error) {
+    console.error("Start appointment error:", error);
+    res.status(500).json(formatResponse("error", "Internal server error"));
+  }
+};
+
+// End appointment (mark as COMPLETED)
+export const endAppointmentConsultation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json(formatResponse("error", "User not authenticated"));
+      return;
+    }
+
+    const { appointmentId } = req.params;
+
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        doctor: { select: { id: true, firstName: true, lastName: true } },
+        patient: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+
+    if (!appointment) {
+      res.status(404).json(formatResponse("error", "Appointment not found"));
+      return;
+    }
+    if (
+      appointment.patientId !== req.user.id &&
+      appointment.doctorId !== req.user.id
+    ) {
+      res.status(403).json(formatResponse("error", "Access denied"));
+      return;
+    }
+    if (appointment.status !== AppointmentStatus.IN_PROGRESS) {
+      res
+        .status(400)
+        .json(
+          formatResponse(
+            "error",
+            `Cannot end appointment with status ${appointment.status}`
+          )
+        );
+      return;
+    }
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: AppointmentStatus.COMPLETED,
+        updatedAt: new Date(),
+      },
+      include: {
+        doctor: { select: { id: true, firstName: true, lastName: true } },
+        patient: { select: { id: true, firstName: true, lastName: true } },
+      },
+    });
+    const sessionRecord = await prisma.sessionRecord.findUnique({
+      where: { appointmentId },
+    });
+
+    if (sessionRecord) {
+      const endedAt = new Date();
+      const duration = sessionRecord.startedAt
+        ? Math.floor(
+            (endedAt.getTime() - sessionRecord.startedAt.getTime()) / 60000
+          )
+        : appointment.duration;
+
+      await prisma.sessionRecord.update({
+        where: { appointmentId },
+        data: {
+          endedAt,
+          duration,
+        },
+      });
+    }
+
+    res.json(
+      formatResponse("success", "Appointment completed successfully", {
+        appointment: updatedAppointment,
+      })
+    );
+  } catch (error) {
+    console.error("End appointment error:", error);
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
@@ -1133,8 +1295,6 @@ export const postChatMessage = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get chat messages for an appointment
 export const getChatMessages = async (
   req: Request,
   res: Response
@@ -1180,8 +1340,6 @@ export const getChatMessages = async (
     res.status(500).json(formatResponse("error", "Internal server error"));
   }
 };
-
-// Get appointment payment details
 export const getPaymentDetails = async (
   req: Request,
   res: Response
@@ -1221,8 +1379,6 @@ export const getPaymentDetails = async (
       res.status(404).json(formatResponse("error", "Appointment not found"));
       return;
     }
-
-    // Check if user has access to this appointment
     if (
       appointment.patientId !== req.user.id &&
       appointment.doctorId !== req.user.id

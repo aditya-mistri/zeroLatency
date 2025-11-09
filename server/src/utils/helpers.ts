@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
-
-// Generate JWT token
 export const generateToken = (payload: {
   id: string;
   email: string;
@@ -33,14 +31,10 @@ export const comparePassword = async (
 ): Promise<boolean> => {
   return await bcrypt.compare(password, hashedPassword);
 };
-
-// Validate email format
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-
-// Validate password strength
 export const isValidPassword = (password: string): boolean => {
   // At least 8 characters, 1 uppercase, 1 lowercase, 1 number
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
@@ -52,8 +46,6 @@ export const sanitizeUser = (user: any) => {
   const { password, ...sanitizedUser } = user;
   return sanitizedUser;
 };
-
-// Generate random string for verification codes
 export const generateRandomCode = (length: number = 6): string => {
   const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let result = "";
@@ -62,8 +54,6 @@ export const generateRandomCode = (length: number = 6): string => {
   }
   return result;
 };
-
-// Format response for consistent API responses
 export const formatResponse = (
   status: "success" | "error",
   message: string,

@@ -20,6 +20,7 @@ import {
   ChannelHeader,
 } from "stream-chat-react";
 import config from "@/lib/config";
+import { LiveTranscription } from "@/components/video/LiveTranscription";
 import "stream-chat-react/dist/css/v2/index.css";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
@@ -52,11 +53,27 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
   const [channel, setChannel] = useState<ReturnType<
     StreamChat["channel"]
   > | null>(null);
+  const [transcriptChannel, setTranscriptChannel] = useState<ReturnType<
+    StreamChat["channel"]
+  > | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(true);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Ensure component only runs on client
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!isMounted) return; // Don't run on server
+    
     const init = async () => {
       setLoading(true);
       try {
@@ -83,8 +100,6 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
           chat: chatInfo,
           call: callInfo,
         } = json.data;
-
-        // Initialize Stream Chat
         const chatClientInstance = StreamChat.getInstance(apiKey);
 
         // Only disconnect if a different user is connected
@@ -120,10 +135,26 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         );
         await channelInstance.watch();
 
+        // Create a separate channel for transcriptions only
+        const transcriptChannelInstance = chatClientInstance.channel(
+          chatInfo.channelType,
+          `${chatInfo.channelId}-transcripts`,
+          {
+            name: `Transcripts`,
+            members: chatInfo.members,
+          }
+        );
+        await transcriptChannelInstance.watch();
+
         setChatClient(chatClientInstance);
         setChannel(channelInstance);
+        setTranscriptChannel(transcriptChannelInstance);
 
-        // Initialize Stream Video
+        // Store current user info for transcription
+        setCurrentUser({
+          id: user.id,
+          name: user.name || "User",
+        });
         const videoClientInstance = new StreamVideoClient({
           apiKey,
           user: {
@@ -165,7 +196,12 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         return null;
       });
     };
-  }, [appointmentId]);
+  }, [appointmentId, isMounted]);
+
+  // Don't render anything on server
+  if (!isMounted) {
+    return null;
+  }
 
   if (loading)
     return (
@@ -192,7 +228,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
       </div>
     );
 
-  if (!chatClient || !channel || !videoClient || !call) return null;
+  if (!chatClient || !channel || !transcriptChannel || !videoClient || !call) return null;
 
   return (
     <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
@@ -204,7 +240,13 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
             onClick={() => setShowVideo(!showVideo)}
             className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
           >
-            {showVideo ? "Show Chat Only" : "Show Video"}
+            {showVideo ? "Hide Video" : "Show Video"}
+          </button>
+          <button
+            onClick={() => setShowTranscript(!showTranscript)}
+            className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 transition"
+          >
+            {showTranscript ? "Hide Transcript" : "Show Transcript"}
           </button>
           <button
             onClick={onClose}
@@ -219,10 +261,18 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
       <div className="flex-1 flex overflow-hidden">
         {/* Chat Section */}
         <div
-          className={`${showVideo ? "w-1/3" : "w-full"} bg-white border-r flex flex-col`}
+          className={`${
+            showVideo && showTranscript
+              ? "w-1/4"
+              : showVideo || showTranscript
+                ? "w-1/3"
+                : "w-full"
+          } bg-white border-r flex flex-col`}
         >
           <Chat client={chatClient} theme="messaging light">
-            <Channel channel={channel}>
+            <Channel 
+              channel={channel}
+            >
               <Window>
                 <ChannelHeader />
                 <MessageList />
@@ -235,7 +285,9 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
 
         {/* Video Section */}
         {showVideo && (
-          <div className="flex-1 bg-black">
+          <div
+            className={`${showTranscript ? "flex-1" : "flex-1"} bg-black`}
+          >
             <StreamVideo client={videoClient}>
               <StreamTheme>
                 <StreamCall call={call}>
@@ -250,6 +302,22 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
                 </StreamCall>
               </StreamTheme>
             </StreamVideo>
+          </div>
+        )}
+
+        {/* Live Transcription Section */}
+        {showTranscript && currentUser && transcriptChannel && (
+          <div
+            className={`${
+              showVideo ? "w-1/4" : "flex-1"
+            } border-l bg-white flex flex-col`}
+          >
+            <LiveTranscription
+              userId={currentUser.id}
+              userName={currentUser.name}
+              language="en-US"
+              channel={transcriptChannel}
+            />
           </div>
         )}
       </div>

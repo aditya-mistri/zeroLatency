@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import AppointmentList from "./appointments/AppointmentList";
 import AvailabilityManager from "./doctor/AvailabilityManager";
+import PatientRecords from "./doctor/PatientRecords";
 import {
   Calendar,
   Users,
@@ -14,7 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-type ViewState = "dashboard" | "appointments" | "availability";
+type ViewState = "dashboard" | "appointments" | "availability" | "patientRecords";
 
 export default function DoctorDashboard() {
   const { user, refreshUser } = useAuth();
@@ -102,6 +103,24 @@ export default function DoctorDashboard() {
           </button>
         </div>
         <AvailabilityManager />
+      </div>
+    );
+  }
+
+  // Handle patient records view
+  if (currentView === "patientRecords") {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Patient Records</h2>
+          <button
+            onClick={() => setCurrentView("dashboard")}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+        <PatientRecords />
       </div>
     );
   }
@@ -219,8 +238,10 @@ export default function DoctorDashboard() {
         </button>
 
         {/* Patients Card */}
-        <div
-          className={`bg-white p-6 rounded-lg shadow ${!isApproved ? "opacity-50" : "hover:shadow-md"} transition-shadow`}
+        <button
+          onClick={() => isApproved && setCurrentView("patientRecords")}
+          disabled={!isApproved}
+          className={`bg-white p-6 rounded-lg shadow text-left ${!isApproved ? "opacity-50 cursor-not-allowed" : "hover:shadow-md cursor-pointer"} transition-shadow`}
         >
           <div className="flex items-center justify-between mb-4">
             <Users
@@ -239,10 +260,10 @@ export default function DoctorDashboard() {
             className={`text-sm ${isApproved ? "text-gray-600" : "text-gray-400"}`}
           >
             {isApproved
-              ? "View consultation history"
+              ? "View consultation history and prescriptions"
               : "Available after verification"}
           </p>
-        </div>
+        </button>
 
         {/* Schedule Card */}
         <button

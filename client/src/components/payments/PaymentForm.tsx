@@ -106,8 +106,6 @@ export default function PaymentForm({
     if (cvv.length < 3) {
       return "Please enter a valid CVV";
     }
-
-    // Validate expiry date
     const [month, year] = expiryDate.split("/");
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear() % 100;

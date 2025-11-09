@@ -28,8 +28,6 @@ export default function DoctorDiscovery({
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  // Fetch doctors
   const fetchDoctors = async () => {
     try {
       setLoading(true);
@@ -55,8 +53,6 @@ export default function DoctorDiscovery({
       setLoading(false);
     }
   };
-
-  // Fetch specializations
   const fetchSpecializations = async () => {
     try {
       const response = await appointmentApi.getSpecializations();

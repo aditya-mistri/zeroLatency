@@ -10,7 +10,8 @@ interface SocketContextType {
   sendMessage: (
     appointmentId: string,
     message: string,
-    messageType?: string
+    messageType?: string,
+    metadata?: Record<string, unknown>
   ) => void;
   updateMeetingLink: (appointmentId: string, meetingLink: string) => void;
 }
@@ -88,10 +89,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const sendMessage = (
     appointmentId: string,
     message: string,
-    messageType = "text"
+    messageType = "text",
+    metadata?: Record<string, unknown>
   ) => {
     if (socket) {
-      socket.emit("send-message", { appointmentId, message, messageType });
+      socket.emit("send-message", { appointmentId, message, messageType, metadata });
     }
   };
 

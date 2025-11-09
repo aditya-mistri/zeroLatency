@@ -3,8 +3,6 @@ import { PrismaClient } from "@prisma/client";
 import { formatResponse } from "../utils/helpers";
 
 const prisma = new PrismaClient();
-
-// Get all hospitals with pagination and search
 export const getHospitals = async (
   req: Request,
   res: Response
@@ -91,8 +89,6 @@ export const getHospitals = async (
     res.status(500).json(formatResponse("error", "Failed to fetch hospitals"));
   }
 };
-
-// Get hospital by ID
 export const getHospitalById = async (
   req: Request,
   res: Response
@@ -138,8 +134,6 @@ export const getHospitalById = async (
       .json(formatResponse("error", "Failed to fetch hospital details"));
   }
 };
-
-// Create new hospital
 export const createHospital = async (
   req: Request,
   res: Response
@@ -169,8 +163,6 @@ export const createHospital = async (
         );
       return;
     }
-
-    // Check if hospital with same name and city already exists
     const existingHospital = await prisma.hospital.findFirst({
       where: {
         name: { equals: name, mode: "insensitive" },
@@ -214,8 +206,6 @@ export const createHospital = async (
     res.status(500).json(formatResponse("error", "Failed to create hospital"));
   }
 };
-
-// Update hospital
 export const updateHospital = async (
   req: Request,
   res: Response
@@ -234,8 +224,6 @@ export const updateHospital = async (
       description,
       isActive,
     } = req.body;
-
-    // Check if hospital exists
     const hospital = await prisma.hospital.findUnique({
       where: { id: hospitalId },
     });
@@ -290,8 +278,6 @@ export const deleteHospital = async (
 ): Promise<void> => {
   try {
     const { hospitalId } = req.params;
-
-    // Check if hospital exists
     const hospital = await prisma.hospital.findUnique({
       where: { id: hospitalId },
       include: {
@@ -307,8 +293,6 @@ export const deleteHospital = async (
       res.status(404).json(formatResponse("error", "Hospital not found"));
       return;
     }
-
-    // Check if hospital has associated doctors
     if (hospital._count.doctors > 0) {
       res
         .status(400)
@@ -339,8 +323,6 @@ export const deleteHospital = async (
     res.status(500).json(formatResponse("error", "Failed to delete hospital"));
   }
 };
-
-// Get hospital statistics
 export const getHospitalStats = async (
   req: Request,
   res: Response

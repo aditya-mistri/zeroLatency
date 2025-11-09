@@ -39,15 +39,11 @@ export const authenticateToken = async (
     if (!jwtSecret) {
       throw new Error('JWT_SECRET not configured');
     }
-
-    // Verify token
     const decoded = jwt.verify(token, jwtSecret) as { 
       id: string; 
       email: string; 
       role: UserRole;
     };
-
-    // Verify user still exists and is active
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { id: true, email: true, role: true, isActive: true },

@@ -37,8 +37,6 @@ export const setupSocketIO = (server: any) => {
       }
 
       const decoded: any = jwt.verify(token, jwtSecret);
-
-      // Verify user exists and is active
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
         select: { id: true, role: true, isActive: true },
@@ -63,7 +61,6 @@ export const setupSocketIO = (server: any) => {
     // Join appointment room
     socket.on("join-appointment", async (appointmentId: string) => {
       try {
-        // Verify user has access to this appointment
         const appointment = await prisma.appointment.findUnique({
           where: { id: appointmentId },
           select: { doctorId: true, patientId: true, status: true },
@@ -125,16 +122,29 @@ export const setupSocketIO = (server: any) => {
         appointmentId: string;
         message: string;
         messageType?: string;
+        fileUrl?: string;
+        metadata?: Record<string, unknown>;
       }) => {
         try {
-          const { appointmentId, message, messageType = "text" } = data;
+          const {
+            appointmentId,
+            message,
+            messageType = "text",
+            fileUrl,
+            metadata,
+          } = data;
 
-          if (!message?.trim()) {
-            socket.emit("error", { message: "Message cannot be empty" });
+          // For file messages, fileUrl is required
+          if (messageType === "file" && !fileUrl) {
+            socket.emit("error", { message: "File URL is required for file messages" });
             return;
           }
 
-          // Verify appointment access and status
+          // For text messages, message text is required
+          if (messageType === "text" && !message?.trim()) {
+            socket.emit("error", { message: "Message cannot be empty" });
+            return;
+          }
           const appointment = await prisma.appointment.findUnique({
             where: { id: appointmentId },
             select: { doctorId: true, patientId: true, status: true },
@@ -152,8 +162,6 @@ export const setupSocketIO = (server: any) => {
             socket.emit("error", { message: "Access denied" });
             return;
           }
-
-          // Check if messaging is allowed
           const isDoctor = socket.userRole === "DOCTOR";
           const allowedStatuses = ["IN_PROGRESS"];
           const doctorPreShareStatuses = ["SCHEDULED", "CONFIRMED"];
@@ -173,8 +181,10 @@ export const setupSocketIO = (server: any) => {
             data: {
               appointmentId,
               senderId: socket.userId!,
-              message: message.trim(),
+              message: messageType === "text" ? message.trim() : (metadata?.fileName as string || "File"),
               messageType,
+              fileUrl,
+              metadata: metadata ? JSON.stringify(metadata) : undefined,
             },
             include: {
               sender: {
@@ -198,15 +208,11 @@ export const setupSocketIO = (server: any) => {
         }
       }
     );
-
-    // Update meeting link
     socket.on(
       "update-meeting-link",
       async (data: { appointmentId: string; meetingLink: string }) => {
         try {
           const { appointmentId, meetingLink } = data;
-
-          // Verify appointment and doctor access
           const appointment = await prisma.appointment.findUnique({
             where: { id: appointmentId },
             select: { doctorId: true, patientId: true },
@@ -226,8 +232,6 @@ export const setupSocketIO = (server: any) => {
             });
             return;
           }
-
-          // Update meeting link
           const updated = await prisma.appointment.update({
             where: { id: appointmentId },
             data: { meetingLink, updatedAt: new Date() },

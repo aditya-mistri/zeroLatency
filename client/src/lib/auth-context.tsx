@@ -18,8 +18,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Initialize auth state
   useEffect(() => {
     const initialize = async () => {
       try {
@@ -50,7 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error("Login failed:", error);
-      return false;
+      // Re-throw the error so the component can catch and display it
+      throw error;
     }
   };
 
@@ -67,7 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return false;
     } catch (error) {
       console.error("Registration failed:", error);
-      return false;
+      // Re-throw the error so the component can catch and display it
+      throw error;
     }
   };
 

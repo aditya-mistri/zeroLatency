@@ -4,8 +4,6 @@ import { formatResponse } from "../utils/helpers";
 
 const router = Router();
 const prisma = new PrismaClient();
-
-// Get approved doctors (public endpoint for patients)
 router.get("/", async (req, res) => {
   try {
     const {
@@ -128,8 +126,6 @@ router.get("/", async (req, res) => {
     res.status(500).json(formatResponse("error", "Failed to fetch doctors"));
   }
 });
-
-// Get doctor profile by ID (public)
 router.get("/:doctorId", async (req, res) => {
   try {
     const { doctorId } = req.params;
@@ -184,8 +180,6 @@ router.get("/:doctorId", async (req, res) => {
       .json(formatResponse("error", "Failed to fetch doctor profile"));
   }
 });
-
-// Get specializations list (public)
 router.get("/meta/specializations", async (req, res) => {
   try {
     const specializations = await prisma.doctorProfile.findMany({

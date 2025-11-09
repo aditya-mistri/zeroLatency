@@ -78,10 +78,8 @@ export default function AuthForm({
     setIsSubmitting(true);
 
     try {
-      let success = false;
-
       if (mode === "login") {
-        success = await login(formData.email, formData.password);
+        await login(formData.email, formData.password);
       } else {
         // Prepare registration data
         const registerData = {
@@ -112,16 +110,20 @@ export default function AuthForm({
           });
         }
 
-        success = await register(registerData);
+        await register(registerData);
       }
-
-      if (!success) {
-        setError(
-          mode === "login" ? "Invalid email or password" : "Registration failed"
-        );
+      // If we get here, success - no error to set
+    } catch (err: unknown) {
+      // Extract the error message from the API error
+      let errorMessage = "An error occurred";
+      
+      if (err && typeof err === "object" && "message" in err) {
+        errorMessage = String(err.message);
+      } else if (typeof err === "string") {
+        errorMessage = err;
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -229,6 +231,7 @@ export default function AuthForm({
               value={formData.password}
               onChange={handleChange}
               required
+              minLength={mode === "register" ? 8 : undefined}
               className="block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
               placeholder={
                 mode === "register" ? "Min. 8 characters" : "Your password"
@@ -246,6 +249,11 @@ export default function AuthForm({
               )}
             </button>
           </div>
+          {mode === "register" && (
+            <p className="mt-1 text-xs text-gray-500">
+              Must be at least 8 characters with uppercase, lowercase, and number
+            </p>
+          )}
         </div>
 
         {/* Registration Fields */}

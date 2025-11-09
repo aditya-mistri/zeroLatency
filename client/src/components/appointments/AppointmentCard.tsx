@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Appointment } from "@/lib/appointment-api";
 import {
   Calendar,
@@ -15,11 +15,18 @@ import {
   AlertCircle,
   Play,
   Video,
+  FileText,
 } from "lucide-react";
 import dynamic from "next/dynamic";
+import { appointmentApi } from "@/lib/appointment-api";
 
 const StreamConsultation = dynamic(
   () => import("../stream/StreamConsultation"),
+  { ssr: false }
+);
+
+const PrescriptionForm = dynamic(
+  () => import("../prescriptions/PrescriptionForm"),
   { ssr: false }
 );
 
@@ -28,6 +35,13 @@ interface AppointmentCardProps {
   userRole: "PATIENT" | "DOCTOR";
   onStatusUpdate?: (appointmentId: string, status: string) => Promise<void>;
   onCancel?: (appointmentId: string, reason?: string) => Promise<void>;
+}
+
+interface JoinStatus {
+  canJoin: boolean;
+  reason?: string;
+  timeUntilStart?: number;
+  timeUntilEnd?: number;
 }
 
 export default function AppointmentCard({
@@ -40,6 +54,60 @@ export default function AppointmentCard({
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showConsultation, setShowConsultation] = useState(false);
+  const [joinStatus, setJoinStatus] = useState<JoinStatus | null>(null);
+  const [timeDisplay, setTimeDisplay] = useState<string>("");
+  const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
+  const [hasPrescription, setHasPrescription] = useState(false);
+  useEffect(() => {
+    const checkJoinStatus = async () => {
+      try {
+        const response = await appointmentApi.canJoinAppointment(appointment.id);
+        if (response.data) {
+          console.log('Join Status for', appointment.id.slice(-8), ':', response.data);
+          setJoinStatus(response.data);
+        }
+      } catch (error) {
+        console.error("Error checking join status:", error);
+      }
+    };
+
+    // Check immediately and then every 30 seconds
+    checkJoinStatus();
+    const interval = setInterval(checkJoinStatus, 30000);
+
+    return () => clearInterval(interval);
+  }, [appointment.id, appointment.status]);
+  useEffect(() => {
+    const updateTimeDisplay = () => {
+      if (!joinStatus) return;
+
+      const now = new Date();
+      const scheduledTime = new Date(appointment.scheduledAt);
+      const endTime = new Date(scheduledTime.getTime() + appointment.duration * 60000);
+      const bufferEndTime = new Date(endTime.getTime() + 5 * 60000);
+
+      if (now < scheduledTime) {
+        const minutesUntil = Math.ceil((scheduledTime.getTime() - now.getTime()) / 60000);
+        if (minutesUntil <= 5) {
+          setTimeDisplay(`Starts in ${minutesUntil} minute${minutesUntil !== 1 ? 's' : ''}`);
+        } else {
+          setTimeDisplay("");
+        }
+      } else if (now >= scheduledTime && now <= endTime) {
+        const minutesRemaining = Math.ceil((endTime.getTime() - now.getTime()) / 60000);
+        setTimeDisplay(`${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''} remaining`);
+      } else if (now > endTime && now <= bufferEndTime) {
+        setTimeDisplay("Consultation ending soon");
+      } else {
+        setTimeDisplay("");
+      }
+    };
+
+    updateTimeDisplay();
+    const interval = setInterval(updateTimeDisplay, 30000);
+
+    return () => clearInterval(interval);
+  }, [joinStatus, appointment.scheduledAt, appointment.duration]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -81,18 +149,23 @@ export default function AppointmentCard({
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
+    const dateFormatted = date.toLocaleDateString("en-US", {
+      timeZone: "Asia/Kolkata",
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const timeFormatted = date.toLocaleTimeString("en-US", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+    
     return {
-      date: date.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }),
-      time: date.toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      date: dateFormatted,
+      time: `${timeFormatted} IST`,
     };
   };
 
@@ -129,6 +202,13 @@ export default function AppointmentCard({
   const isUpcoming = new Date(appointment.scheduledAt) > new Date();
   const canModify =
     isUpcoming && ["SCHEDULED", "CONFIRMED"].includes(appointment.status);
+  
+  // Determine if join button should be shown
+  const showJoinButton = joinStatus?.canJoin && 
+    ["CONFIRMED", "IN_PROGRESS"].includes(appointment.status);
+  
+  console.log('Appointment', appointment.id.slice(-8), 'showJoinButton:', showJoinButton, 
+              'joinStatus:', joinStatus, 'status:', appointment.status);
 
   return (
     <>
@@ -168,6 +248,31 @@ export default function AppointmentCard({
             </span>
           </div>
         </div>
+
+        {/* Time Status Display */}
+        {timeDisplay && showJoinButton && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center">
+              <Clock className="h-5 w-5 text-blue-600 mr-2" />
+              <p className="text-sm font-medium text-blue-800">
+                {timeDisplay}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Cannot Join Message */}
+        {!joinStatus?.canJoin && joinStatus?.reason && 
+         ["CONFIRMED", "IN_PROGRESS"].includes(appointment.status) && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
+              <p className="text-sm text-amber-800">
+                {joinStatus.reason}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Other Party Info */}
         <div className="space-y-3 mb-4">
@@ -243,69 +348,71 @@ export default function AppointmentCard({
         )}
 
         {/* Actions */}
-        {canModify && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
-            {/* Pay Now button for PAYMENT_PENDING appointments */}
-            {userRole === "PATIENT" &&
-              appointment.status === "PAYMENT_PENDING" &&
-              appointment.paymentStatus === "PENDING" && (
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+          {/* Join Consultation button - show for IN_PROGRESS appointments within time window */}
+          {showJoinButton && (
+            <button
+              onClick={() => setShowConsultation(true)}
+              className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              Join Consultation
+            </button>
+          )}
+
+          {canModify && (
+            <>
+              {/* Pay Now button for PAYMENT_PENDING appointments */}
+              {userRole === "PATIENT" &&
+                appointment.status === "PAYMENT_PENDING" &&
+                appointment.paymentStatus === "PENDING" && (
+                  <button
+                    onClick={() =>
+                      (window.location.href = `/payment/${appointment.id}`)
+                    }
+                    disabled={loading}
+                    className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors flex items-center"
+                  >
+                    Pay Now (₹{appointment.amount})
+                  </button>
+                )}
+
+              {userRole === "DOCTOR" && appointment.status === "SCHEDULED" && (
                 <button
-                  onClick={() =>
-                    (window.location.href = `/payment/${appointment.id}`)
-                  }
+                  onClick={() => handleStatusUpdate("CONFIRMED")}
                   disabled={loading}
-                  className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors flex items-center"
+                  className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
                 >
-                  Pay Now (₹{appointment.amount})
+                  Confirm
                 </button>
               )}
 
-            {userRole === "DOCTOR" && appointment.status === "SCHEDULED" && (
-              <button
-                onClick={() => handleStatusUpdate("CONFIRMED")}
-                disabled={loading}
-                className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-              >
-                Confirm
-              </button>
-            )}
+              {appointment.status === "CONFIRMED" && (
+                <button
+                  onClick={() => handleStatusUpdate("IN_PROGRESS")}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  Start Consultation
+                </button>
+              )}
 
-            {appointment.status === "CONFIRMED" && (
-              <button
-                onClick={() => handleStatusUpdate("IN_PROGRESS")}
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
-              >
-                Start Consultation
-              </button>
-            )}
-
-            {/* Join Consultation button */}
-            {canModify && (
-              <button
-                onClick={() => setShowConsultation(true)}
-                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
-              >
-                <Video className="h-4 w-4" />
-                Join Consultation
-              </button>
-            )}
-
-            {/* Don't allow cancellation for PAYMENT_PENDING with COMPLETED payment */}
-            {!(
-              appointment.status === "PAYMENT_PENDING" &&
-              appointment.paymentStatus === "COMPLETED"
-            ) && (
-              <button
-                onClick={() => setShowCancelModal(true)}
-                disabled={loading}
-                className="px-4 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 disabled:opacity-50 transition-colors"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        )}
+              {/* Don't allow cancellation for PAYMENT_PENDING with COMPLETED payment */}
+              {!(
+                appointment.status === "PAYMENT_PENDING" &&
+                appointment.paymentStatus === "COMPLETED"
+              ) && (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 disabled:opacity-50 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Payment Status */}
         <div className="mt-4 pt-3 border-t border-gray-100">
@@ -324,6 +431,22 @@ export default function AppointmentCard({
             </span>
           </div>
         </div>
+
+        {/* Prescription Button for In Progress and Completed Consultations */}
+        {(appointment.status === "IN_PROGRESS" || appointment.status === "COMPLETED") && 
+         userRole === "DOCTOR" && (
+          <div className="mt-4 pt-3 border-t border-gray-100">
+            <button
+              onClick={() => setShowPrescriptionForm(true)}
+              className="w-full px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              {appointment.status === "IN_PROGRESS" 
+                ? "Add/Edit Prescription (Draft)" 
+                : "Create/View Prescription"}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Cancel Modal */}
@@ -368,6 +491,17 @@ export default function AppointmentCard({
         <StreamConsultation
           appointmentId={appointment.id}
           onClose={() => setShowConsultation(false)}
+        />
+      )}
+      {showPrescriptionForm && (
+        <PrescriptionForm
+          appointmentId={appointment.id}
+          patientName={`${appointment.patient.firstName} ${appointment.patient.lastName}`}
+          onClose={() => setShowPrescriptionForm(false)}
+          onSuccess={() => {
+            // Refresh appointment data or show success message
+            alert("Prescription created successfully!");
+          }}
         />
       )}
     </>

@@ -36,8 +36,6 @@ export const config = {
     allowedTypes: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
   },
 };
-
-// Helper functions
 export const isProduction = () => config.app.environment === "production";
 export const isDevelopment = () => config.app.environment === "development";
 

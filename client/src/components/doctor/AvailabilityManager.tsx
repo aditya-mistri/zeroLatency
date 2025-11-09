@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Calendar, Clock, Save, Trash2, AlertCircle, Copy } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { config } from "@/lib/config";
+import { getCurrentISTDate, formatISTDate } from "@/lib/timezone-utils";
 
 interface DaySchedule {
   date: string;
@@ -28,26 +29,22 @@ const AvailabilityManager: React.FC = () => {
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [clearing, setClearing] = useState<Record<string, boolean>>({});
   const [next7Days, setNext7Days] = useState<DaySchedule[]>([]);
-
-  // Generate next 7 days starting from today
   const getNext7Days = () => {
     const days = [];
-    const today = new Date();
+    const todayIST = getCurrentISTDate(); // Get today's date in IST
+    const todayDate = new Date(todayIST);
 
     for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
+      const date = new Date(todayDate);
+      date.setDate(todayDate.getDate() + i);
       const dateStr = date.toISOString().split("T")[0];
+      
+      const formatted = formatISTDate(dateStr);
 
       days.push({
         date: dateStr,
-        dayName: date.toLocaleDateString("en-US", { weekday: "long" }),
-        fullDate: date.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        }),
+        dayName: formatted.dayOfWeek,
+        fullDate: formatted.long,
         startTime: "09:00",
         endTime: "17:00",
         slotDurationMinutes: 30,
@@ -56,20 +53,14 @@ const AvailabilityManager: React.FC = () => {
     }
     return days;
   };
-
-  // Initialize on mount
   useEffect(() => {
     const days = getNext7Days();
     setNext7Days(days);
-
-    // Initialize schedules with default values
     const initialSchedules: Record<string, DaySchedule> = {};
     days.forEach((day) => {
       initialSchedules[day.date] = day;
     });
     setSchedules(initialSchedules);
-
-    // Fetch saved availabilities
     fetchDoctorAvailabilities();
   }, []); // Run once on mount
 
@@ -91,12 +82,9 @@ const AvailabilityManager: React.FC = () => {
         const availabilities = data.data?.availabilities || [];
 
         console.log("Fetched availabilities:", availabilities); // Debug log
-
-        // Update schedules with fetched data
         setSchedules((prev) => {
           const updated = { ...prev };
           availabilities.forEach((av: AvailabilityResponse) => {
-            // Check if date exists in our schedule
             if (updated[av.date] && av.slots && av.slots.length > 0) {
               const slot = av.slots[0]; // Take first slot
               console.log("Processing slot:", slot); // Debug log
@@ -308,6 +296,12 @@ const AvailabilityManager: React.FC = () => {
             Set your working hours for each day. Patients can book appointments
             during these times.
           </p>
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <Clock className="inline h-4 w-4 mr-1" />
+              All times are in <strong>Indian Standard Time (IST)</strong>
+            </p>
+          </div>
         </div>
 
         <div className="p-6">

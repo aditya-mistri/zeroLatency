@@ -14,8 +14,9 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 - **Patient Portal**: Register, find doctors, and book appointments
 - **Doctor Dashboard**: Manage appointments and host video consultations  
 - **Moderator Panel**: Verify doctor credentials and manage hospitals
-- **Video Consultations**: Secure video calls with chat and transcription
-- **Mock Payments**: Simulated payment flow using Stripe test mode
+- **Video Consultations**: Secure video calls with integrated chat
+- **Live Transcription**: Real-time speech-to-text
+- **Mock Payments**: Simulated payment flow 
 
 ## Product Gallery
 <img width="1902" height="886" alt="image" src="https://github.com/user-attachments/assets/03dcd093-87e3-4bfe-8980-d42921d047d7" />
@@ -48,8 +49,9 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 - **Deployment**: Render
 
 ### Additional Services
-- **Video Calls**: WebRTC by Stream API
-- **Transcription**: --
+- **Video Calls**: Stream.io Video SDK
+- **Chat**: Stream.io Chat SDK
+- **Live Transcription**: Web Speech API (Browser-based, FREE)
 - **Payments**: Stripe (Test Mode)
 - **File Storage**: Cloudinary
 
@@ -83,6 +85,7 @@ ZeroLatency-connect/
 2. Configure build settings
 3. Deploy with automatic previews
 
+
 ## Development Phases
 
 - [x] **Phase 1**: Foundation - Auth, roles, basic setup ✅
@@ -90,25 +93,13 @@ ZeroLatency-connect/
 - [x] **Phase 3**: Appointment booking system ✅
 - [x] **Phase 4**: Payment simulation ✅
 - [x] **Phase 5**: Video calls & chat ✅
-- [x] **Phase 6**: Transcription & records 
-- [ ] **Phase 7**: QA & final polish 
+- [x] **Phase 6**: Live transcription ✅
+- [x] **Phase 7**: Medical records & history
+- [ ] **Phase 8**: QA & final polish
 
-## User Roles
-
-| Role | Capabilities |
-|------|-------------|
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
-
-
-
-
-
-
-
-
-
 
 
 
