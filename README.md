@@ -15,8 +15,8 @@ ZeroLatency Connect is a comprehensive telehealth platform featuring:
 - **Doctor Dashboard**: Manage appointments and host video consultations  
 - **Moderator Panel**: Verify doctor credentials and manage hospitals
 - **Video Consultations**: Secure video calls with integrated chat
-- **🆕 Live Transcription**: Real-time speech-to-text in 13+ languages to overcome dialect barriers
-- **Mock Payments**: Simulated payment flow using Stripe test mode
+- **Live Transcription**: Real-time speech-to-text
+- **Mock Payments**: Simulated payment flow 
 
 ## Product Gallery
 <img width="1902" height="886" alt="image" src="https://github.com/user-attachments/assets/03dcd093-87e3-4bfe-8980-d42921d047d7" />
@@ -93,39 +93,13 @@ ZeroLatency-connect/
 - [x] **Phase 3**: Appointment booking system ✅
 - [x] **Phase 4**: Payment simulation ✅
 - [x] **Phase 5**: Video calls & chat ✅
-- [x] **Phase 6**: Live transcription (English & Hindi) ✅
-- [ ] **Phase 7**: Medical records & history
+- [x] **Phase 6**: Live transcription ✅
+- [x] **Phase 7**: Medical records & history
 - [ ] **Phase 8**: QA & final polish
 
 | **Patient** | Register, book appointments, join consultations |
 | **Doctor** | Manage profile, handle appointments, conduct consultations |
 | **Moderator** | Verify doctors, manage hospitals, monitor platform |
-
-## 🆕 Key Features
-
-### Live Transcription
-Real-time speech-to-text during video consultations to overcome language and dialect barriers.
-
-**Features:**
-- ✅ Real-time transcription in 13+ languages
-- ✅ Support for multiple dialects (US, UK, Indian English, etc.)
-- ✅ Download transcripts as text files
-- ✅ Free to use (Web Speech API)
-- ✅ Privacy-focused (all processing in browser)
-
-**Supported Languages:**
-🇺🇸 English (US/UK/India) | 🇪🇸 Spanish | 🇫🇷 French | 🇩🇪 German | 🇮🇹 Italian | 🇧🇷 Portuguese | 🇮🇳 Hindi | 🇨🇳 Chinese | 🇯🇵 Japanese | 🇰🇷 Korean | 🇸🇦 Arabic
-
-📖 [Full Documentation](./docs/live-transcription.md) | [Quick Start Guide](./docs/transcription-quick-start.md)
-
-
-
-
-
-
-
-
-
 
 
 
