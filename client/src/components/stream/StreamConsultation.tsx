@@ -24,6 +24,51 @@ import { LiveTranscription } from "@/components/video/LiveTranscription";
 import "stream-chat-react/dist/css/v2/index.css";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 
+// Custom styles for video layout
+const customVideoStyles = `
+  .str-video__speaker-layout__wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+  
+  .str-video__speaker-layout__spotlight {
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+  
+  .str-video__participant-view {
+    border-radius: 8px !important;
+  }
+  
+  .str-video__participants-bar {
+    padding: 12px !important;
+    gap: 12px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+  }
+  
+  .str-video__participants-bar .str-video__participant-view {
+    width: 120px !important;
+    height: 90px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  .str-video__call-controls {
+    gap: 12px !important;
+  }
+  
+  .str-video__call-controls button {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s !important;
+  }
+  
+  .str-video__call-controls button:hover {
+    transform: scale(1.1) !important;
+  }
+`;
+
 interface StreamConsultationProps {
   appointmentId: string;
   onClose: () => void;
@@ -231,8 +276,10 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
   if (!chatClient || !channel || !transcriptChannel || !videoClient || !call) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
-      {/* Header */}
+    <>
+      <style>{customVideoStyles}</style>
+      <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
+        {/* Header */}
       <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Consultation Room</h2>
         <div className="flex items-center gap-2">
@@ -286,17 +333,23 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         {/* Video Section */}
         {showVideo && (
           <div
-            className={`${showTranscript ? "flex-1" : "flex-1"} bg-black`}
+            className={`${showTranscript ? "flex-1" : "flex-1"} bg-black relative`}
           >
             <StreamVideo client={videoClient}>
               <StreamTheme>
                 <StreamCall call={call}>
                   <div className="h-full flex flex-col">
-                    <div className="flex-1">
-                      <SpeakerLayout />
+                    {/* Main video area with custom layout */}
+                    <div className="flex-1 relative">
+                      <SpeakerLayout 
+                        participantsBarPosition="bottom"
+                      />
                     </div>
-                    <div className="p-4 bg-gray-900">
-                      <CallControls />
+                    {/* Call controls at bottom */}
+                    <div className="p-4 bg-gray-900 flex justify-center">
+                      <CallControls 
+                        onLeave={onClose}
+                      />
                     </div>
                   </div>
                 </StreamCall>
@@ -322,6 +375,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
         )}
       </div>
     </div>
+    </>
   );
 };
 
