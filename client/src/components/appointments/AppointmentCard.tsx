@@ -519,3 +519,4 @@ export default function AppointmentCard({
     </>
   );
 }
+// Force rebuild - removed polling
