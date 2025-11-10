@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Users, Calendar, FileText, Eye, Clock, Search } from "lucide-react";
+import { Users, Calendar, Eye, Clock, Search, Edit, Plus } from "lucide-react";
 import PrescriptionView from "../prescriptions/PrescriptionView";
+import dynamic from "next/dynamic";
+
+const PrescriptionForm = dynamic(() => import("../prescriptions/PrescriptionForm"), { ssr: false });
 
 interface Prescription {
   id: string;
@@ -62,6 +65,10 @@ export default function PatientRecords() {
     patient: PatientRecord["patient"];
     appointmentDate: string;
   } | null>(null);
+  const [prescriptionFormData, setPrescriptionFormData] = useState<{
+    appointmentId: string;
+    patientName: string;
+  } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedPatient, setExpandedPatient] = useState<string | null>(null);
 
@@ -73,7 +80,7 @@ export default function PatientRecords() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/patient-records`,
+        `${process.env.NEXT_PUBLIC_API_URL}/patient-records`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -145,14 +152,6 @@ export default function PatientRecords() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Patient Records</h2>
-        <p className="text-gray-600 mt-1">
-          View consultation history and medical records for your patients
-        </p>
-      </div>
-
       {/* Search */}
       <div className="flex items-center gap-4">
         <div className="flex-1 relative">
@@ -308,21 +307,50 @@ export default function PatientRecords() {
                             </p>
                           </div>
 
-                          {consultation.sessionRecord?.prescription && (
-                            <button
-                              onClick={() =>
-                                setSelectedPrescription({
-                                  prescription: consultation.sessionRecord!.prescription!,
-                                  patient: record.patient,
-                                  appointmentDate: consultation.scheduledAt,
-                                })
-                              }
-                              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-                            >
-                              <Eye className="h-4 w-4" />
-                              View Prescription
-                            </button>
-                          )}
+                          <div className="flex gap-2">
+                            {consultation.sessionRecord?.prescription ? (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setSelectedPrescription({
+                                      prescription: consultation.sessionRecord!.prescription!,
+                                      patient: record.patient,
+                                      appointmentDate: consultation.scheduledAt,
+                                    })
+                                  }
+                                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  View
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setPrescriptionFormData({
+                                      appointmentId: consultation.id,
+                                      patientName: `${record.patient.firstName} ${record.patient.lastName}`,
+                                    })
+                                  }
+                                  className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Edit
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  setPrescriptionFormData({
+                                    appointmentId: consultation.id,
+                                    patientName: `${record.patient.firstName} ${record.patient.lastName}`,
+                                  })
+                                }
+                                className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Create Prescription
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         {consultation.notes && (
@@ -330,13 +358,6 @@ export default function PatientRecords() {
                             <p className="text-gray-700">
                               <span className="font-medium">Notes:</span> {consultation.notes}
                             </p>
-                          </div>
-                        )}
-
-                        {!consultation.sessionRecord?.prescription && (
-                          <div className="flex items-center gap-2 text-sm text-gray-500 italic">
-                            <FileText className="h-4 w-4" />
-                            <span>No prescription recorded</span>
                           </div>
                         )}
                       </div>
@@ -349,13 +370,26 @@ export default function PatientRecords() {
         </div>
       )}
 
+      {/* Prescription Form Modal */}
+      {prescriptionFormData && (
+        <PrescriptionForm
+          appointmentId={prescriptionFormData.appointmentId}
+          patientName={prescriptionFormData.patientName}
+          onClose={() => setPrescriptionFormData(null)}
+          onSuccess={() => {
+            setPrescriptionFormData(null);
+            fetchPatientRecords(); // Refresh the records
+          }}
+        />
+      )}
+
       {/* Prescription Modal */}
       {selectedPrescription && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="relative w-full max-w-4xl my-8">
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+          <div className="modal-container modal-content relative w-full max-w-4xl">
             <button
               onClick={() => setSelectedPrescription(null)}
-              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              className="sticky top-4 left-full ml-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
             >
               <svg
                 className="h-6 w-6 text-gray-600"

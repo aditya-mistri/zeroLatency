@@ -10,7 +10,7 @@ import {
   Mail,
   Phone,
   Calendar,
-  DollarSign,
+  FileText,
 } from "lucide-react";
 import { DoctorWithDetails, PaginationInfo } from "@/types/moderator";
 import { moderatorApi } from "@/lib/moderator-api";
@@ -221,8 +221,7 @@ export default function DoctorManagement({
                         {doctor.experience} years experience
                       </div>
                       <div className="text-sm text-gray-500 flex items-center">
-                        $
-                        {doctor.consultationFee} consultation
+                        ₹{doctor.consultationFee} consultation
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -242,6 +241,19 @@ export default function DoctorManagement({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
+                        {/* View License Button */}
+                        {doctor.licenseUrl && (
+                          <a
+                            href={doctor.licenseUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-purple-600 hover:text-purple-900 p-1"
+                            title="View License"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </a>
+                        )}
+                        
                         <button
                           onClick={() => onViewDoctor(doctor)}
                           className="text-blue-600 hover:text-blue-900 p-1"

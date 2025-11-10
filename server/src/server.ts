@@ -92,7 +92,9 @@ const io = setupSocketIO(server);
 
 // Inject Socket.IO into controllers that need it
 import { setSocketIO } from "./controllers/appointmentController";
+import { setSocketIO as setPrescriptionSocketIO } from "./controllers/prescriptionController";
 setSocketIO(io);
+setPrescriptionSocketIO(io);
 
 // Start appointment scheduler for auto-status updates
 import { startAppointmentScheduler } from "./utils/appointmentScheduler";
