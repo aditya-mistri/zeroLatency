@@ -277,7 +277,7 @@ const AvailabilityManager: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2">Loading availabilities...</span>
+        <span className="ml-2 text-gray-900">Loading availabilities...</span>
       </div>
     );
   }
@@ -286,12 +286,6 @@ const AvailabilityManager: React.FC = () => {
     <div className="max-w-6xl mx-auto p-6">
       <div className="bg-white rounded-lg shadow-lg">
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center gap-3 mb-2">
-            <Calendar className="h-6 w-6 text-blue-600" />
-            <h1 className="text-2xl font-bold text-gray-900">
-              Manage Weekly Availability
-            </h1>
-          </div>
           <p className="text-gray-600">
             Set your working hours for each day. Patients can book appointments
             during these times.
@@ -308,7 +302,7 @@ const AvailabilityManager: React.FC = () => {
           {Object.keys(schedules).length === 0 ? (
             <div className="text-center py-8">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">Loading schedule...</p>
+              <p className="text-gray-900">Loading schedule...</p>
             </div>
           ) : (
             <div className="space-y-4">

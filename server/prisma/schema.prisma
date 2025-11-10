@@ -38,6 +38,7 @@ model DoctorProfile {
   specialization    String
   experience        Int
   qualification     String
+  licenseUrl        String?              // Medical license/degree certificate
   bio               String?
   consultationFee   Float
   status            DoctorStatus         @default(PENDING)

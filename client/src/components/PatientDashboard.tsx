@@ -35,7 +35,21 @@ export default function PatientDashboard() {
   };
 
   if (currentView === "findDoctors") {
-    return <DoctorDiscovery onSelectDoctor={handleSelectDoctor} />;
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Find Doctors</h2>
+          <button
+            onClick={handleBackToDashboard}
+            className="text-blue-600 hover:text-blue-800"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+        
+        <DoctorDiscovery onSelectDoctor={handleSelectDoctor} />
+      </div>
+    );
   }
 
   if (currentView === "booking" && selectedDoctor) {

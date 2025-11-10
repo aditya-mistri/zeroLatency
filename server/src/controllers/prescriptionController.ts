@@ -3,6 +3,12 @@ import { PrismaClient, AppointmentStatus } from "@prisma/client";
 import { formatResponse } from "../utils/helpers";
 
 const prisma = new PrismaClient();
+// Socket.IO instance - will be injected
+let socketIO: any = null;
+
+export const setSocketIO = (io: any) => {
+  socketIO = io;
+};
 
 // Create or update prescription (can be draft during consultation)
 export const createPrescription = async (
@@ -111,6 +117,19 @@ export const createPrescription = async (
           status: prescriptionStatus,
         },
       });
+    }
+
+    // Emit real-time update to appointment room so connected clients (doctor/patient)
+    // receive the new/updated prescription during the consultation
+    try {
+      if (socketIO) {
+        socketIO.to(`appointment-${appointmentId}`).emit("prescription-updated", {
+          appointmentId,
+          prescription,
+        });
+      }
+    } catch (emitErr) {
+      console.error("Failed to emit prescription update:", emitErr);
     }
 
     res.status(prescription ? 200 : 201).json(

@@ -33,6 +33,7 @@ export interface DoctorProfile {
   specialization: string;
   experience: number;
   qualification: string;
+  licenseUrl?: string; // Medical license/degree certificate
   bio?: string;
   consultationFee: number;
   status: DoctorStatus;

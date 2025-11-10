@@ -9,6 +9,7 @@ import {
   sanitizeUser,
   formatResponse 
 } from '../utils/helpers';
+import { uploadToCloudinary } from '../utils/cloudinary';
 
 const prisma = new PrismaClient();
 
@@ -96,6 +97,25 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         return;
       }
 
+      // Check if license file is uploaded
+      const licenseFile = (req as any).file;
+      let licenseUrl: string | undefined;
+
+      if (licenseFile) {
+        try {
+          // Upload license to Cloudinary
+          const uploadResult = await uploadToCloudinary(
+            licenseFile.buffer,
+            'doctor-licenses',
+            `license-${user.id}-${Date.now()}`
+          );
+          licenseUrl = uploadResult.url;
+        } catch (uploadError) {
+          console.error('License upload error:', uploadError);
+          // Continue without license URL - will be pending verification
+        }
+      }
+
       await prisma.doctorProfile.create({
         data: {
           userId: user.id,
@@ -103,6 +123,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
           experience: parseInt(experience),
           qualification,
           consultationFee: parseFloat(consultationFee),
+          licenseUrl,
         },
       });
     }

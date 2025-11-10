@@ -9,7 +9,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  DollarSign,
   CheckCircle,
   XCircle,
   AlertCircle,
@@ -19,11 +18,6 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { appointmentApi } from "@/lib/appointment-api";
-
-const StreamConsultation = dynamic(
-  () => import("../stream/StreamConsultation"),
-  { ssr: false }
-);
 
 const PrescriptionForm = dynamic(
   () => import("../prescriptions/PrescriptionForm"),
@@ -53,11 +47,9 @@ export default function AppointmentCard({
   const [loading, setLoading] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const [showConsultation, setShowConsultation] = useState(false);
   const [joinStatus, setJoinStatus] = useState<JoinStatus | null>(null);
   const [timeDisplay, setTimeDisplay] = useState<string>("");
   const [showPrescriptionForm, setShowPrescriptionForm] = useState(false);
-  const [hasPrescription, setHasPrescription] = useState(false);
   useEffect(() => {
     const checkJoinStatus = async () => {
       try {
@@ -143,7 +135,7 @@ export default function AppointmentCard({
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "PAYMENT_PENDING":
-        return <DollarSign className="h-4 w-4" />;
+        return <span className="text-base">₹</span>;
       case "SCHEDULED":
         return <Calendar className="h-4 w-4" />;
       case "CONFIRMED":
@@ -251,7 +243,7 @@ export default function AppointmentCard({
           </div>
 
           <div className="flex items-center text-green-600 font-medium">
-            ${appointment.amount}
+            ₹{appointment.amount}
           </div>
         </div>
 
@@ -369,7 +361,14 @@ export default function AppointmentCard({
           {/* Join Consultation button - show for IN_PROGRESS appointments within time window */}
           {showJoinButton && (
             <button
-              onClick={() => setShowConsultation(true)}
+              onClick={() => {
+                // Open consultation room in a new tab
+                window.open(
+                  `/consultation/${appointment.id}`,
+                  '_blank',
+                  'noopener,noreferrer'
+                );
+              }}
               className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center gap-2"
             >
               <Video className="h-4 w-4" />
@@ -469,8 +468,8 @@ export default function AppointmentCard({
 
       {/* Cancel Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+          <div className="modal-content bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Cancel Appointment
             </h3>
@@ -505,12 +504,7 @@ export default function AppointmentCard({
           </div>
         </div>
       )}
-      {showConsultation && (
-        <StreamConsultation
-          appointmentId={appointment.id}
-          onClose={() => setShowConsultation(false)}
-        />
-      )}
+
       {showPrescriptionForm && (
         <PrescriptionForm
           appointmentId={appointment.id}

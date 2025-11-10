@@ -50,11 +50,38 @@ async function apiRequest<T>(
 // Authentication API functions
 export const authApi = {
   // Register new user
-  register: async (userData: RegisterData): Promise<AuthResponse> => {
-    return apiRequest<AuthResponse>("/auth/register", {
+  register: async (userData: RegisterData | FormData): Promise<AuthResponse> => {
+    const url = `${API_BASE_URL}/auth/register`;
+    const token = localStorage.getItem("authToken");
+    
+    // Check if userData is FormData (for file uploads)
+    const isFormData = userData instanceof FormData;
+    
+    const config: RequestInit = {
       method: "POST",
-      body: JSON.stringify(userData),
-    });
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        // Don't set Content-Type for FormData - browser will set it with boundary
+        ...(!isFormData && { "Content-Type": "application/json" }),
+      },
+      body: isFormData ? userData : JSON.stringify(userData),
+    };
+
+    try {
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new ApiError(response.status, data.message || "Registration failed");
+      }
+
+      return data;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(500, "Network error occurred");
+    }
   },
 
   // Login user
