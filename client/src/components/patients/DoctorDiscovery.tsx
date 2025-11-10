@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { appointmentApi, Doctor } from "@/lib/appointment-api";
-import { Search, MapPin, DollarSign, Filter } from "lucide-react";
+import { Search, MapPin, Filter } from "lucide-react";
 
 interface DoctorDiscoveryProps {
   onSelectDoctor: (doctor: Doctor) => void;
@@ -119,12 +119,6 @@ export default function DoctorDiscovery({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Find a Doctor</h2>
-          <p className="text-gray-600">
-            Book appointments with verified healthcare professionals
-          </p>
-        </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
           className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -373,9 +367,10 @@ export default function DoctorDiscovery({
 
       {/* Loading Overlay */}
       {loading && doctors.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50">
+          <div className="modal-content bg-white p-6 rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-900 mt-3 text-sm">Loading...</p>
           </div>
         </div>
       )}

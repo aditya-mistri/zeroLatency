@@ -42,11 +42,13 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("authToken");
     if (!token) {
+      console.log("No auth token found, skipping socket connection");
       return;
     }
 
+    console.log("Connecting to Socket.IO with auth token");
     const socketInstance = io(config.api.baseUrl.replace("/api", ""), {
       auth: {
         token,

@@ -24,3 +24,140 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Make all gray text much darker - nearly black for best visibility */
+.text-gray-600,
+span.text-gray-600,
+p.text-gray-600,
+div.text-gray-600 {
+  color: #171717 !important; /* Nearly black */
+}
+
+.text-gray-500,
+span.text-gray-500,
+p.text-gray-500,
+div.text-gray-500 {
+  color: #171717 !important; /* Nearly black */
+}
+
+.text-gray-400,
+span.text-gray-400,
+p.text-gray-400,
+div.text-gray-400 {
+  color: #171717 !important; /* Nearly black */
+}
+
+.text-gray-700,
+span.text-gray-700,
+p.text-gray-700,
+div.text-gray-700 {
+  color: #171717 !important; /* Nearly black */
+}
+
+.text-gray-800,
+span.text-gray-800,
+p.text-gray-800,
+div.text-gray-800 {
+  color: #171717 !important; /* Nearly black */
+}
+
+/* Override any colored text classes that might be light */
+[class*="text-gray"] {
+  color: #171717 !important;
+}
+
+
+/* Restore placeholder text to a lighter gray for usability */
+.placeholder-gray-400::placeholder,
+::placeholder {
+  color: #a3a3a3 !important; /* Tailwind gray-400 */
+  opacity: 1 !important;
+}
+
+/* Make all input text fully black for best visibility */
+input,
+textarea {
+  color: #171717 !important;
+}
+
+/* Animation for prescription notification */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Fade in animation for chat messages */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Enhanced Modal Backdrop - Blur + Darkened */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Modal Container - Fit within viewport with margins */
+.modal-container {
+  max-height: 90vh;
+  max-width: 95vw;
+  overflow-y: auto;
+  margin: auto;
+}
+
+/* Smooth scrollbar for modals */
+.modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Fade in animation for modals */
+@keyframes modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-content {
+  animation: modal-fade-in 0.2s ease-out;
+}

@@ -13,6 +13,7 @@ interface AppointmentListProps {
 export default function AppointmentList({ userRole }: AppointmentListProps) {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<{
@@ -20,7 +21,7 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
     upcoming: boolean;
   }>({
     status: "ALL",
-    upcoming: false,
+    upcoming: true, // Show upcoming by default
   });
 
   const statusOptions = [
@@ -55,7 +56,10 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
       }
 
       const response = await appointmentApi.getAppointments(params);
-      setAppointments(response.data?.appointments || []);
+  // Sort appointments by scheduledAt descending (latest first)
+  const sorted = (response.data?.appointments || []).sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+  setAppointments(sorted);
+  setAllAppointments(sorted); // Store all for stats
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load appointments"
@@ -92,13 +96,13 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
   };
 
   const getFilterStats = () => {
-    const total = appointments.length;
-    const upcoming = appointments.filter(
+    const total = allAppointments.length;
+    const upcoming = allAppointments.filter(
       (apt) =>
         new Date(apt.scheduledAt) > new Date() &&
         ["SCHEDULED", "CONFIRMED"].includes(apt.status)
     ).length;
-    const completed = appointments.filter(
+    const completed = allAppointments.filter(
       (apt) => apt.status === "COMPLETED"
     ).length;
 
@@ -186,7 +190,7 @@ export default function AppointmentList({ userRole }: AppointmentListProps) {
               onChange={(e) =>
                 setFilter((prev) => ({ ...prev, status: e.target.value }))
               }
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>

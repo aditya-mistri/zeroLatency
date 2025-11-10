@@ -420,17 +420,14 @@ export const updateAppointmentStatus = async (
 
     // Business logic for status changes
     if (status === AppointmentStatus.CANCELLED) {
-      // Allow cancellation up to 2 hours before appointment
-      const twoHoursBeforeAppointment = new Date(
-        appointment.scheduledAt.getTime() - 2 * 60 * 60 * 1000
-      );
-      if (new Date() > twoHoursBeforeAppointment) {
+      // Allow cancellation any time before appointment starts
+      if (new Date() > appointment.scheduledAt) {
         res
           .status(400)
           .json(
             formatResponse(
               "error",
-              "Cannot cancel appointment less than 2 hours before scheduled time"
+              "Cannot cancel appointment after it has started"
             )
           );
         return;
@@ -522,17 +519,14 @@ export const cancelAppointment = async (
       return;
     }
 
-    // Check cancellation time limit (2 hours before)
-    const twoHoursBeforeAppointment = new Date(
-      appointment.scheduledAt.getTime() - 2 * 60 * 60 * 1000
-    );
-    if (new Date() > twoHoursBeforeAppointment) {
+    // Check if appointment has already started
+    if (new Date() > appointment.scheduledAt) {
       res
         .status(400)
         .json(
           formatResponse(
             "error",
-            "Cannot cancel appointment less than 2 hours before scheduled time"
+            "Cannot cancel appointment after it has started"
           )
         );
       return;

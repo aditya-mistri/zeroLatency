@@ -65,7 +65,7 @@ export default function MedicalHistory() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/medical-history`,
+        `${process.env.NEXT_PUBLIC_API_URL}/medical-history`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -136,14 +136,6 @@ export default function MedicalHistory() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">Medical History</h2>
-        <p className="text-gray-600 mt-1">
-          View your past consultations and prescriptions
-        </p>
-      </div>
-
       {/* Search */}
       <div className="flex items-center gap-4">
         <input
@@ -270,11 +262,11 @@ export default function MedicalHistory() {
 
       {/* Prescription Modal */}
       {selectedPrescription && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="relative w-full max-w-4xl my-8">
+        <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+          <div className="modal-container modal-content relative w-full max-w-4xl">
             <button
               onClick={() => setSelectedPrescription(null)}
-              className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
+              className="sticky top-4 left-full ml-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition-colors"
             >
               <svg
                 className="h-6 w-6 text-gray-600"

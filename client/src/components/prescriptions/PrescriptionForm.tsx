@@ -52,7 +52,7 @@ export default function PrescriptionForm({
     setMedications(updated);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, status: "DRAFT" | "SENT" = "DRAFT") => {
     e.preventDefault();
 
     if (!diagnosis.trim()) {
@@ -71,7 +71,7 @@ export default function PrescriptionForm({
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${appointmentId}/prescription`,
+        `${process.env.NEXT_PUBLIC_API_URL}/appointments/${appointmentId}/prescription`,
         {
           method: "POST",
           headers: {
@@ -84,6 +84,7 @@ export default function PrescriptionForm({
             labTests: labTests.trim() || null,
             advice: advice.trim() || null,
             followUpDate: followUpDate || null,
+            status, // Pass the status (DRAFT or SENT)
           }),
         }
       );
@@ -94,7 +95,10 @@ export default function PrescriptionForm({
         throw new Error(data.message || "Failed to create prescription");
       }
 
-      alert("Prescription created successfully!");
+      const successMessage = status === "SENT" 
+        ? "Prescription sent to patient successfully!" 
+        : "Prescription saved as draft!";
+      alert(successMessage);
       onSuccess();
       onClose();
     } catch (error) {
@@ -106,10 +110,10 @@ export default function PrescriptionForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-4xl w-full my-8">
+    <div className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div className="modal-container modal-content bg-white rounded-lg w-full max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10 rounded-t-lg">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Create Prescription</h2>
             <p className="text-sm text-gray-600 mt-1">For patient: {patientName}</p>
@@ -123,7 +127,7 @@ export default function PrescriptionForm({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Diagnosis */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -283,7 +287,7 @@ export default function PrescriptionForm({
         </form>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 sticky bottom-0 rounded-b-lg">
           <button
             type="button"
             onClick={onClose}
@@ -293,12 +297,20 @@ export default function PrescriptionForm({
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={(e) => handleSubmit(e, "DRAFT")}
             disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors flex items-center gap-2"
           >
             <FileText className="h-4 w-4" />
-            {loading ? "Creating..." : "Create Prescription"}
+            {loading ? "Saving..." : "Save as Draft"}
+          </button>
+          <button
+            onClick={(e) => handleSubmit(e, "SENT")}
+            disabled={loading}
+            className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            {loading ? "Sending..." : "Send to Patient"}
           </button>
         </div>
       </div>

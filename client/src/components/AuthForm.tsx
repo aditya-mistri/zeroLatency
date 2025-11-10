@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { UserRole } from "@/types/auth";
 import { useAuth } from "@/lib/auth-context";
-import { Eye, EyeOff, User, UserPlus, Shield } from "lucide-react";
+import { Eye, EyeOff, User, UserPlus, Shield, Upload, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AuthFormProps {
@@ -58,6 +58,7 @@ export default function AuthForm({
     address: "",
   });
 
+  const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,36 +82,51 @@ export default function AuthForm({
       if (mode === "login") {
         await login(formData.email, formData.password);
       } else {
-        // Prepare registration data
-        const registerData = {
-          email: formData.email,
-          password: formData.password,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone || undefined,
-          role: formData.role,
-        };
-
-        // Add doctor-specific fields
+        // For doctor registration with file upload
         if (formData.role === UserRole.DOCTOR) {
-          Object.assign(registerData, {
-            specialization: formData.specialization,
-            experience: parseInt(formData.experience),
-            qualification: formData.qualification,
-            consultationFee: parseFloat(formData.consultationFee),
-          });
-        }
+          // Create FormData for multipart/form-data
+          const formDataToSend = new FormData();
+          formDataToSend.append("email", formData.email);
+          formDataToSend.append("password", formData.password);
+          formDataToSend.append("firstName", formData.firstName);
+          formDataToSend.append("lastName", formData.lastName);
+          formDataToSend.append("role", formData.role);
+          
+          if (formData.phone) formDataToSend.append("phone", formData.phone);
+          formDataToSend.append("specialization", formData.specialization);
+          formDataToSend.append("experience", formData.experience);
+          formDataToSend.append("qualification", formData.qualification);
+          formDataToSend.append("consultationFee", formData.consultationFee);
+          
+          // Add license file if provided
+          if (licenseFile) {
+            formDataToSend.append("license", licenseFile);
+          }
 
-        // Add patient-specific fields
-        if (formData.role === UserRole.PATIENT) {
-          Object.assign(registerData, {
-            dateOfBirth: formData.dateOfBirth || undefined,
-            gender: formData.gender || undefined,
-            address: formData.address || undefined,
-          });
-        }
+          // Call register with FormData
+          await register(formDataToSend);
+        } else {
+          // Regular JSON registration for patients/moderators
+          const registerData = {
+            email: formData.email,
+            password: formData.password,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone || undefined,
+            role: formData.role,
+          };
 
-        await register(registerData);
+          // Add patient-specific fields
+          if (formData.role === UserRole.PATIENT) {
+            Object.assign(registerData, {
+              dateOfBirth: formData.dateOfBirth || undefined,
+              gender: formData.gender || undefined,
+              address: formData.address || undefined,
+            });
+          }
+
+          await register(registerData);
+        }
       }
       // If we get here, success - no error to set
     } catch (err: unknown) {
@@ -133,7 +149,7 @@ export default function AuthForm({
   const isPatient = formData.role === UserRole.PATIENT;
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+    <div className="modal-container modal-content w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">
           {mode === "login" ? "Welcome Back" : "Create Account"}
@@ -363,7 +379,7 @@ export default function AuthForm({
                       htmlFor="consultationFee"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Consultation Fee ($)
+                      Consultation Fee (₹)
                     </label>
                     <input
                       type="number"
@@ -396,6 +412,65 @@ export default function AuthForm({
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                     placeholder="e.g., MD, MBBS, PhD"
                   />
+                </div>
+
+                {/* Medical License Upload */}
+                <div>
+                  <label
+                    htmlFor="license"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Medical License / Degree Certificate <span className="text-red-500">*</span>
+                  </label>
+                  <div className="mt-1 flex items-center gap-3">
+                    <label
+                      htmlFor="license"
+                      className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50 hover:border-blue-500 transition-all duration-200"
+                    >
+                      <Upload className="h-5 w-5 text-gray-600" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {licenseFile ? "Change File" : "Upload License"}
+                      </span>
+                    </label>
+                    <input
+                      type="file"
+                      id="license"
+                      name="license"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          // Validate file size (5MB max)
+                          if (file.size > 5 * 1024 * 1024) {
+                            setError("File size must be less than 5MB");
+                            e.target.value = "";
+                            return;
+                          }
+                          setLicenseFile(file);
+                          setError("");
+                        }
+                      }}
+                      required
+                      className="hidden"
+                    />
+                    {licenseFile && (
+                      <div className="flex items-center gap-2 flex-1 min-w-0 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                        <FileText className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span className="text-sm text-green-700 truncate">
+                          {licenseFile.name}
+                        </span>
+                        <span className="text-xs text-green-600 ml-auto flex-shrink-0">
+                          {(licenseFile.size / 1024).toFixed(1)} KB
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Upload your medical license or degree certificate (JPG, PNG, or PDF, max 5MB)
+                  </p>
+                  <p className="mt-1 text-xs text-yellow-600">
+                    Your account will be reviewed by our moderators before approval
+                  </p>
                 </div>
               </>
             )}
