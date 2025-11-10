@@ -118,7 +118,7 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
 
   useEffect(() => {
     if (!isMounted) return; // Don't run on server
-    
+
     const init = async () => {
       setLoading(true);
       try {
@@ -273,108 +273,103 @@ export const StreamConsultation: React.FC<StreamConsultationProps> = ({
       </div>
     );
 
-  if (!chatClient || !channel || !transcriptChannel || !videoClient || !call) return null;
+  if (!chatClient || !channel || !transcriptChannel || !videoClient || !call)
+    return null;
 
   return (
     <>
       <style>{customVideoStyles}</style>
       <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
         {/* Header */}
-      <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Consultation Room</h2>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowVideo(!showVideo)}
-            className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
-          >
-            {showVideo ? "Hide Video" : "Show Video"}
-          </button>
-          <button
-            onClick={() => setShowTranscript(!showTranscript)}
-            className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 transition"
-          >
-            {showTranscript ? "Hide Transcript" : "Show Transcript"}
-          </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
-          >
-            End Consultation
-          </button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Chat Section */}
-        <div
-          className={`${
-            showVideo && showTranscript
-              ? "w-1/4"
-              : showVideo || showTranscript
-                ? "w-1/3"
-                : "w-full"
-          } bg-white border-r flex flex-col`}
-        >
-          <Chat client={chatClient} theme="messaging light">
-            <Channel 
-              channel={channel}
+        <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Consultation Room</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowVideo(!showVideo)}
+              className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition"
             >
-              <Window>
-                <ChannelHeader />
-                <MessageList />
-                <MessageInput />
-              </Window>
-              <Thread />
-            </Channel>
-          </Chat>
+              {showVideo ? "Hide Video" : "Show Video"}
+            </button>
+            <button
+              onClick={() => setShowTranscript(!showTranscript)}
+              className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 transition"
+            >
+              {showTranscript ? "Hide Transcript" : "Show Transcript"}
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
+            >
+              End Consultation
+            </button>
+          </div>
         </div>
 
-        {/* Video Section */}
-        {showVideo && (
-          <div
-            className={`${showTranscript ? "flex-1" : "flex-1"} bg-black relative`}
-          >
-            <StreamVideo client={videoClient}>
-              <StreamTheme>
-                <StreamCall call={call}>
-                  <div className="h-full flex flex-col">
-                    {/* Main video area with custom layout */}
-                    <div className="flex-1 relative">
-                      <SpeakerLayout 
-                        participantsBarPosition="bottom"
-                      />
-                    </div>
-                    {/* Call controls at bottom */}
-                    <div className="p-4 bg-gray-900 flex justify-center">
-                      <CallControls 
-                        onLeave={onClose}
-                      />
-                    </div>
-                  </div>
-                </StreamCall>
-              </StreamTheme>
-            </StreamVideo>
-          </div>
-        )}
-
-        {/* Live Transcription Section */}
-        {showTranscript && currentUser && transcriptChannel && (
+        {/* Main Content */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Chat Section */}
           <div
             className={`${
-              showVideo ? "w-1/4" : "flex-1"
-            } border-l bg-white flex flex-col`}
+              showVideo && showTranscript
+                ? "w-1/4"
+                : showVideo || showTranscript
+                  ? "w-1/3"
+                  : "w-full"
+            } bg-white border-r flex flex-col`}
           >
-            <LiveTranscription
-              userId={currentUser.id}
-              userName={currentUser.name}
-              language="en-US"
-              channel={transcriptChannel}
-            />
+            <Chat client={chatClient} theme="messaging light">
+              <Channel channel={channel}>
+                <Window>
+                  <ChannelHeader />
+                  <MessageList />
+                  <MessageInput />
+                </Window>
+                <Thread />
+              </Channel>
+            </Chat>
           </div>
-        )}
+
+          {/* Video Section */}
+          {showVideo && (
+            <div
+              className={`${showTranscript ? "flex-1" : "flex-1"} bg-black relative`}
+            >
+              <StreamVideo client={videoClient}>
+                <StreamTheme>
+                  <StreamCall call={call}>
+                    <div className="h-full flex flex-col">
+                      {/* Main video area with custom layout */}
+                      <div className="flex-1 relative">
+                        <SpeakerLayout participantsBarPosition="bottom" />
+                      </div>
+                      {/* Call controls at bottom */}
+                      <div className="p-4 bg-gray-900 flex justify-center">
+                        <CallControls onLeave={onClose} />
+                      </div>
+                    </div>
+                  </StreamCall>
+                </StreamTheme>
+              </StreamVideo>
+            </div>
+          )}
+
+          {/* Live Transcription Section */}
+          {showTranscript && currentUser && transcriptChannel && (
+            <div
+              className={`${
+                showVideo ? "w-1/4" : "flex-1"
+              } border-l bg-white flex flex-col`}
+            >
+              <LiveTranscription
+                userId={currentUser.id}
+                userName={currentUser.name}
+                language="en-US"
+                channel={transcriptChannel}
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </>
   );
 };
