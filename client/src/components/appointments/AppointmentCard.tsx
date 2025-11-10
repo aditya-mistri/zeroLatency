@@ -61,9 +61,16 @@ export default function AppointmentCard({
   useEffect(() => {
     const checkJoinStatus = async () => {
       try {
-        const response = await appointmentApi.canJoinAppointment(appointment.id);
+        const response = await appointmentApi.canJoinAppointment(
+          appointment.id
+        );
         if (response.data) {
-          console.log('Join Status for', appointment.id.slice(-8), ':', response.data);
+          console.log(
+            "Join Status for",
+            appointment.id.slice(-8),
+            ":",
+            response.data
+          );
           setJoinStatus(response.data);
         }
       } catch (error) {
@@ -71,11 +78,8 @@ export default function AppointmentCard({
       }
     };
 
-    // Check immediately and then every 30 seconds
+    // Check only once when component mounts or status changes
     checkJoinStatus();
-    const interval = setInterval(checkJoinStatus, 30000);
-
-    return () => clearInterval(interval);
   }, [appointment.id, appointment.status]);
   useEffect(() => {
     const updateTimeDisplay = () => {
@@ -83,19 +87,29 @@ export default function AppointmentCard({
 
       const now = new Date();
       const scheduledTime = new Date(appointment.scheduledAt);
-      const endTime = new Date(scheduledTime.getTime() + appointment.duration * 60000);
+      const endTime = new Date(
+        scheduledTime.getTime() + appointment.duration * 60000
+      );
       const bufferEndTime = new Date(endTime.getTime() + 5 * 60000);
 
       if (now < scheduledTime) {
-        const minutesUntil = Math.ceil((scheduledTime.getTime() - now.getTime()) / 60000);
+        const minutesUntil = Math.ceil(
+          (scheduledTime.getTime() - now.getTime()) / 60000
+        );
         if (minutesUntil <= 5) {
-          setTimeDisplay(`Starts in ${minutesUntil} minute${minutesUntil !== 1 ? 's' : ''}`);
+          setTimeDisplay(
+            `Starts in ${minutesUntil} minute${minutesUntil !== 1 ? "s" : ""}`
+          );
         } else {
           setTimeDisplay("");
         }
       } else if (now >= scheduledTime && now <= endTime) {
-        const minutesRemaining = Math.ceil((endTime.getTime() - now.getTime()) / 60000);
-        setTimeDisplay(`${minutesRemaining} minute${minutesRemaining !== 1 ? 's' : ''} remaining`);
+        const minutesRemaining = Math.ceil(
+          (endTime.getTime() - now.getTime()) / 60000
+        );
+        setTimeDisplay(
+          `${minutesRemaining} minute${minutesRemaining !== 1 ? "s" : ""} remaining`
+        );
       } else if (now > endTime && now <= bufferEndTime) {
         setTimeDisplay("Consultation ending soon");
       } else {
@@ -103,10 +117,8 @@ export default function AppointmentCard({
       }
     };
 
+    // Calculate time display once when joinStatus changes or component mounts
     updateTimeDisplay();
-    const interval = setInterval(updateTimeDisplay, 30000);
-
-    return () => clearInterval(interval);
   }, [joinStatus, appointment.scheduledAt, appointment.duration]);
 
   const getStatusColor = (status: string) => {
@@ -162,7 +174,7 @@ export default function AppointmentCard({
       minute: "2-digit",
       hour12: true,
     });
-    
+
     return {
       date: dateFormatted,
       time: `${timeFormatted} IST`,
@@ -202,13 +214,22 @@ export default function AppointmentCard({
   const isUpcoming = new Date(appointment.scheduledAt) > new Date();
   const canModify =
     isUpcoming && ["SCHEDULED", "CONFIRMED"].includes(appointment.status);
-  
+
   // Determine if join button should be shown
-  const showJoinButton = joinStatus?.canJoin && 
+  const showJoinButton =
+    joinStatus?.canJoin &&
     ["CONFIRMED", "IN_PROGRESS"].includes(appointment.status);
-  
-  console.log('Appointment', appointment.id.slice(-8), 'showJoinButton:', showJoinButton, 
-              'joinStatus:', joinStatus, 'status:', appointment.status);
+
+  console.log(
+    "Appointment",
+    appointment.id.slice(-8),
+    "showJoinButton:",
+    showJoinButton,
+    "joinStatus:",
+    joinStatus,
+    "status:",
+    appointment.status
+  );
 
   return (
     <>
@@ -254,25 +275,22 @@ export default function AppointmentCard({
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center">
               <Clock className="h-5 w-5 text-blue-600 mr-2" />
-              <p className="text-sm font-medium text-blue-800">
-                {timeDisplay}
-              </p>
+              <p className="text-sm font-medium text-blue-800">{timeDisplay}</p>
             </div>
           </div>
         )}
 
         {/* Cannot Join Message */}
-        {!joinStatus?.canJoin && joinStatus?.reason && 
-         ["CONFIRMED", "IN_PROGRESS"].includes(appointment.status) && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
-              <p className="text-sm text-amber-800">
-                {joinStatus.reason}
-              </p>
+        {!joinStatus?.canJoin &&
+          joinStatus?.reason &&
+          ["CONFIRMED", "IN_PROGRESS"].includes(appointment.status) && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
+                <p className="text-sm text-amber-800">{joinStatus.reason}</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Other Party Info */}
         <div className="space-y-3 mb-4">
@@ -332,7 +350,6 @@ export default function AppointmentCard({
         {appointment.status === "PAYMENT_PENDING" && (
           <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
             <div className="flex items-center">
-              
               <div>
                 <p className="text-sm font-medium text-orange-800">
                   Payment Required
@@ -433,20 +450,21 @@ export default function AppointmentCard({
         </div>
 
         {/* Prescription Button for In Progress and Completed Consultations */}
-        {(appointment.status === "IN_PROGRESS" || appointment.status === "COMPLETED") && 
-         userRole === "DOCTOR" && (
-          <div className="mt-4 pt-3 border-t border-gray-100">
-            <button
-              onClick={() => setShowPrescriptionForm(true)}
-              className="w-full px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              {appointment.status === "IN_PROGRESS" 
-                ? "Add/Edit Prescription (Draft)" 
-                : "Create/View Prescription"}
-            </button>
-          </div>
-        )}
+        {(appointment.status === "IN_PROGRESS" ||
+          appointment.status === "COMPLETED") &&
+          userRole === "DOCTOR" && (
+            <div className="mt-4 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => setShowPrescriptionForm(true)}
+                className="w-full px-4 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                {appointment.status === "IN_PROGRESS"
+                  ? "Add/Edit Prescription (Draft)"
+                  : "Create/View Prescription"}
+              </button>
+            </div>
+          )}
       </div>
 
       {/* Cancel Modal */}
